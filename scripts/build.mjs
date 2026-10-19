@@ -77,11 +77,16 @@ function shell(title, description, route, body) {
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="${href("/")}">${esc(site.title)}</a>
-  <p class="tagline">${esc(site.tagline)}</p>
+  <a class="profile-mark" href="${href("/")}" aria-label="Ana sayfa"><img src="${href("/assets/img/author-mark.svg")}" alt=""></a>
+  <div class="brand-block">
+    <a class="brand" href="${href("/")}" aria-label="Mahmutcan Zaman ana sayfa">${esc(site.title)}</a>
+    <p class="tagline">${esc(site.tagline)}</p>
+  </div>
+  <p class="sidebar-caption">Kişisel mühendislik günlüğü</p>
   <nav aria-label="Ana menü">
     ${[["Ana Sayfa","/"],["Kategoriler","/categories/"],["Etiketler","/tags/"],["Arşiv","/archives/"],["Araçlar ve Simülasyonlar","/tools/"],["Hakkımda","/about/"]].map(([name, url]) => `<a href="${href(url)}"${route === url ? ' aria-current="page"' : ""}>${name}</a>`).join("\n    ")}
   </nav>
+  <div class="sidebar-bottom"><span class="live-dot" aria-hidden="true"></span><span>Notlar, projeler ve simülasyonlar</span></div>
 </header>
 <main class="site-main">${body}</main>
 <footer class="site-footer"><span>© ${new Date().getUTCFullYear()} ${esc(site.title)}.</span><span>${esc(site.description)}</span></footer>
