@@ -1,26 +1,21 @@
 # Mahmutcan Zaman — Kişisel Blog
 
-Yayın adresi: https://rangers9017.github.io/
+[Blogu görüntüle](https://rangers9017.github.io/)
 
-Elektrik-elektronik mühendisliği, yazılım ve kişisel projelerim üzerine kişisel blog. Tasarım ve sayfa üretimi bu depodaki dosyalara aittir; Jekyll, tema, Ruby gemleri veya npm paketleri kullanmaz.
+Elektrik-elektronik, yazılım ve kişisel projelerimle ilgili yazılarımı burada paylaşıyorum. Site, bu depodaki HTML, CSS ve JavaScript dosyalarıyla oluşturuluyor; Jekyll, tema, Ruby gemleri veya npm paketleri gerektirmiyor.
 
-## Yeni yazı ekleme
+## Yazı eklemek
 
-`content/posts.json` içindeki diziye yeni bir nesne ekle:
+`content/posts.json` dosyasındaki listeye yeni bir yazı ekle. Her yazıda `slug`, `title`, `description`, `date`, `categories`, `tags` ve HTML içeriğini tutan `body` alanları bulunur.
 
-- `slug`: URL'de kullanılacak kısa ad
-- `title`, `description`, `date`
-- `categories` ve `tags`
-- `body`: HTML içerik
-
-GitHub'a gönderildiğinde Pages iş akışı yazı sayfasını, ana sayfayı, arşivi ve ilgili etiket/kategori sayfalarını üretir.
+GitHub'a gönderilen değişiklik, yazı sayfasını ve ilgili arşiv, kategori ve etiket sayfalarını üretir.
 
 ## Yerel önizleme
 
-Node.js 22 ile:
+Node.js 22 kuruluysa proje klasöründe:
 
 ```sh
 node scripts/build.mjs
 ```
 
-Oluşan `_site` klasörünü herhangi bir statik HTTP sunucusuyla görüntüleyebilirsin. Üretim çıktısı HTML, CSS, JavaScript ve görsel dosyalarından oluşur.
+Üretilen site `_site` klasörüne yazılır. Bu klasörü yerel bir statik HTTP sunucusuyla görüntüleyebilirsin.
