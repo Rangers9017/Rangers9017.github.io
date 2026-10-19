@@ -1,0 +1,18 @@
+[
+  {
+    "slug": "merhaba-ben-mahmutcan",
+    "title": "Merhaba, ben Mahmutcan",
+    "description": "Kendimi, bu blogun konularını ve burada paylaşmayı planladığım projeleri tanıtıyorum.",
+    "date": "2026-10-19",
+    "categories": [
+      "Kişisel"
+    ],
+    "tags": [
+      "tanışma",
+      "mühendislik",
+      "yazılım"
+    ],
+    "pinned": true,
+    "body": "<p>Merhaba, ben <strong>Mahmutcan Zaman</strong>. Elektrik-elektronik mühendisliği mezunuyum; gömülü sistemler, otomasyon, hareket kontrolü ve bilgisayarlı görüyle ilgileniyorum.</p>\n<p>Bu blogu, öğrendiklerimi ve üzerinde çalıştığım projeleri düzenli biçimde paylaşabileceğim bir alan olarak hazırlıyorum. Donanım ve yazılımın kesiştiği konular kadar, küçük bir fikrin çalışan bir araca dönüşme süreci de ilgimi çekiyor.</p>\n<h2>Burada neler bulacaksın?</h2>\n<p>Elektrik-elektronik mühendisliği, Python ve C++, gömülü yazılım ve otomasyon üzerine teknik notlar paylaşmayı planlıyorum. Zaman zaman robotik, insansız sistemler, simülasyonlar ve geliştirdiğim tarayıcı uygulamaları hakkında da yazacağım.</p>\n<p>Sitedeki <strong>Araçlar</strong> bölümünde mühendislik hesaplayıcıları, teknik rehberler ve farklı konuları etkileşimli biçimde anlatan uygulamalar yer alıyor. Yeni projeler yaptıkça bu bölümü geliştirmeye devam edeceğim.</p>\n<p>Bu sayfayı ziyaret ettiğin için teşekkürler. Umarım burada işine yarayan bir bilgi ya da ilham veren bir proje bulursun.</p>"
+  }
+]

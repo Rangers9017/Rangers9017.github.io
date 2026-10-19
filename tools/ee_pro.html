@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE Pro — Elektrik Elektronik Mühendisliği</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090f;--bg2:#0d1320;--bg3:#111827;
+  --green:#00ff88;--cyan:#00d4ff;--orange:#ff6b35;--purple:#a855f7;--yellow:#fbbf24;
+  --text:#e2e8f0;--muted:#64748b;--border:#1e2d40;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* PCB BACKGROUND */
+#pcb-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.07;pointer-events:none}
+
+/* LAYOUT */
+#app{position:relative;z-index:1}
+header{background:linear-gradient(135deg,#0d1320 0%,#0a1628 100%);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green),var(--cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;animation:pulse-glow 2s infinite}
+.logo-text{font-size:20px;font-weight:700;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:-2px}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.nav-btn{padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font-size:13px;transition:all .2s}
+.nav-btn:hover,.nav-btn.active{background:var(--bg3);color:var(--green);border-color:var(--green);box-shadow:0 0 12px rgba(0,255,136,.15)}
+
+main{max-width:1400px;margin:0 auto;padding:24px 16px}
+.section{display:none}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card:hover{border-color:rgba(0,255,136,.3);box-shadow:0 4px 24px rgba(0,255,136,.06)}
+.card-title{font-size:14px;font-weight:600;color:var(--green);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+/* FORM CONTROLS */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.field input,.field select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;transition:border .2s}
+.field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--cyan));color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,255,136,.3)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.result-box{background:var(--bg3);border:1px solid var(--green);border-radius:8px;padding:14px;margin-top:12px;min-height:48px}
+.result-value{font-size:22px;font-weight:700;color:var(--green);font-family:monospace}
+.result-label{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* STAT CARDS */
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:all .2s}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--green)}
+.stat-val{font-size:20px;font-weight:700;font-family:monospace;color:var(--cyan)}
+.stat-name{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-unit{font-size:10px;color:var(--purple);margin-top:2px}
+
+/* RESISTOR */
+.resistor-visual{display:flex;align-items:center;gap:4px;margin:12px 0;height:44px}
+.r-lead{flex:1;height:3px;background:#888}
+.r-body{width:120px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#d4a055;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.r-band{width:12px;height:100%;position:absolute;opacity:.9;border-radius:2px}
+.r-band:nth-child(1){left:18px}
+.r-band:nth-child(2){left:34px}
+.r-band:nth-child(3){left:50px}
+.r-band:nth-child(4){left:70px}
+.r-band:nth-child(5){left:86px}
+.color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.color-swatch{width:100%;height:24px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:all .15s;font-size:9px;display:flex;align-items:center;justify-content:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.color-swatch.selected{border-color:#fff;transform:scale(1.1)}
+
+/* OSCILLOSCOPE */
+#osc-canvas{width:100%;border-radius:8px;background:#000;border:1px solid #0a2a0a}
+.osc-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.osc-control{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.osc-control input[type=range]{width:80px;accent-color:var(--green)}
+.wave-btn{padding:5px 12px;font-size:11px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:4px;cursor:pointer;transition:all .15s}
+.wave-btn.active{border-color:var(--green);color:var(--green)}
+
+/* ROADMAP */
+.roadmap{position:relative;padding-left:40px}
+.roadmap::before{content:'';position:absolute;left:16px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--green),var(--purple),var(--cyan))}
+.rm-item{position:relative;margin-bottom:24px;animation:fadeInLeft .4s ease both}
+.rm-dot{position:absolute;left:-31px;top:6px;width:14px;height:14px;border-radius:50%;border:2px solid var(--green);background:var(--bg);transition:all .2s}
+.rm-item:hover .rm-dot{background:var(--green);box-shadow:0 0 12px var(--green)}
+.rm-item.done .rm-dot{background:var(--green)}
+.rm-item.current .rm-dot{background:var(--cyan);border-color:var(--cyan);animation:pulse-glow 1.5s infinite}
+.rm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .2s}
+.rm-card:hover{border-color:rgba(0,255,136,.4);transform:translateX(4px)}
+.rm-title{font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.rm-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.rm-desc{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+.rm-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+
+/* PCB */
+.pcb-tip{background:var(--bg2);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:10px;transition:all .2s}
+.pcb-tip:hover{background:var(--bg3);transform:translateX(2px)}
+.pcb-tip-title{font-weight:600;font-size:13px;color:var(--cyan);margin-bottom:4px}
+.pcb-tip-body{font-size:12px;color:var(--muted);line-height:1.6}
+.pcb-warn{border-left-color:var(--orange)}
+.pcb-warn .pcb-tip-title{color:var(--orange)}
+.pcb-ok{border-left-color:var(--green)}
+.pcb-ok .pcb-tip-title{color:var(--green)}
+
+/* FORMULA TABLE */
+.ftable{width:100%;border-collapse:collapse;font-size:13px}
+.ftable th{background:var(--bg3);color:var(--green);padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.ftable td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.ftable tr:hover td{background:rgba(0,255,136,.04)}
+.formula{font-family:monospace;color:var(--cyan);font-size:13px}
+
+/* ANIMATIONS */
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 6px rgba(0,255,136,.4)}50%{box-shadow:0 0 18px rgba(0,255,136,.8)}}
+@keyframes fadeInLeft{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes trace-flow{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.blink{animation:blink 1s infinite}
+
+/* ELECTRON ANIMATION */
+#electron-canvas{width:100%;border-radius:8px}
+
+/* BADGES */
+.badge-beginner{background:rgba(0,255,136,.15);color:var(--green)}
+.badge-intermediate{background:rgba(0,212,255,.15);color:var(--cyan)}
+.badge-advanced{background:rgba(168,85,247,.15);color:var(--purple)}
+.badge-expert{background:rgba(255,107,53,.15);color:var(--orange)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--green)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#000;padding:10px 20px;border-radius:8px;font-weight:600;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:9999}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  nav{gap:2px}.nav-btn{padding:5px 8px;font-size:11px}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<canvas id="pcb-bg"></canvas>
+<div id="toast"></div>
+
+<div id="app">
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">EE Pro</div>
+      <div class="logo-sub">Elektrik Elektronik Mühendisliği</div>
+    </div>
+  </a>
+  <nav>
+    <button class="nav-btn active" onclick="showSection('dashboard')">🏠 Anasayfa</button>
+    <button class="nav-btn" onclick="showSection('hesap')">🧮 Hesaplamalar</button>
+    <button class="nav-btn" onclick="showSection('pcb')">🖥️ PCB</button>
+    <button class="nav-btn" onclick="showSection('roadmap')">🗺️ Yol Haritası</button>
+    <button class="nav-btn" onclick="showSection('formul')">📐 Formüller</button>
+    <button class="nav-btn" onclick="showSection('sim')">📊 Simülasyon</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ======== DASHBOARD ======== -->
+<div class="section active" id="section-dashboard">
+  <div style="margin-bottom:20px">
+    <h1 style="font-size:26px;font-weight:700">Merhaba, Mühendis! 👋</h1>
+    <p style="color:var(--muted);margin-top:4px;font-size:14px">Elektrik elektronik hesaplamalarınız, PCB rehberiniz ve öğrenme yolunuz burada.</p>
+  </div>
+
+  <!-- Temel Sabitler -->
+  <div class="card">
+    <div class="card-title">⚡ Temel Fizik Sabitleri</div>
+    <div class="grid-4">
+      <div class="stat-card"><div class="stat-val">9.109×10⁻³¹</div><div class="stat-name">Elektron Kütlesi</div><div class="stat-unit">kg</div></div>
+      <div class="stat-card"><div class="stat-val">1.602×10⁻¹⁹</div><div class="stat-name">Elektron Yükü</div><div class="stat-unit">Coulomb</div></div>
+      <div class="stat-card"><div class="stat-val">8.854×10⁻¹²</div><div class="stat-name">Permitivite (ε₀)</div><div class="stat-unit">F/m</div></div>
+      <div class="stat-card"><div class="stat-val">4π×10⁻⁷</div><div class="stat-name">Permeabilite (μ₀)</div><div class="stat-unit">H/m</div></div>
+      <div class="stat-card"><div class="stat-val">3×10⁸</div><div class="stat-name">Işık Hızı</div><div class="stat-unit">m/s</div></div>
+      <div class="stat-card"><div class="stat-val">6.626×10⁻³⁴</div><div class="stat-name">Planck Sabiti</div><div class="stat-unit">J·s</div></div>
+      <div class="stat-card"><div class="stat-val">1.38×10⁻²³</div><div class="stat-name">Boltzmann (k)</div><div class="stat-unit">J/K</div></div>
+      <div class="stat-card"><div class="stat-val">26 mV</div><div class="stat-name">Termal Voltaj (27°C)</div><div class="stat-unit">V</div></div>
+    </div>
+  </div>
+
+  <!-- Hızlı Hesap -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⚡ Ohm Yasası — Hızlı Hesap</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field"><label>Gerilim V (Volt)</label><input type="number" id="q_v" placeholder="örn. 12" oninput="quickOhm()"></div>
+        <div class="field"><label>Akım I (Amper)</label><input type="number" id="q_i" placeholder="örn. 0.5" oninput="quickOhm()"></div>
+        <div class="field"><label>Direnç R (Ohm)</label><input type="number" id="q_r" placeholder="örn. 24" oninput="quickOhm()"></div>
+        <div class="field"><label>Güç P (Watt)</label><input type="number" id="q_p" placeholder="örn. 6" oninput="quickOhm()"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">İki değer girin — diğerleri otomatik hesaplanır</div>
+      <div class="result-box" id="q_result"><span style="color:var(--muted);font-size:13px">Değerleri girin...</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💡 Günün İpucu</div>
+      <div id="tip-box" style="font-size:14px;line-height:1.7;color:var(--text)"></div>
+      <button class="btn btn-secondary" style="margin-top:14px;font-size:12px" onclick="nextTip()">Sonraki İpucu →</button>
+    </div>
+  </div>
+
+  <!-- Kritik Kurallar -->
+  <div class="card">
+    <div class="card-title">🔴 Hatırlatıcılar — Asla Unutma!</div>
+    <div class="grid-3">
+      <div style="background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--orange);font-weight:700;margin-bottom:6px">⚠️ Güç Kaynağı</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">DC güç kaynağını bağlamadan önce polariteyi kontrol et. Ters bağlantı bileşenleri yakabilir!</div>
+      </div>
+      <div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--green);font-weight:700;margin-bottom:6px">✅ ESD Koruması</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">CMOS ve hassas bileşenleri topraklama bileziği olmadan elleme. Statik deşarj bileşeni anında öldürür.</div>
+      </div>
+      <div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--purple);font-weight:700;margin-bottom:6px">🔋 Kondansatör</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Elektrolitik kondansatörlerin polaritesine dikkat! Ters bağlı veya aşırı gerilimli kondansatör patlayabilir.</div>
+      </div>
+      <div style="background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--cyan);font-weight:700;margin-bottom:6px">🌡️ Termal</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Güç transistörleri ve regülatörler için yeterli ısı alıcı kullan. Termal direnç hesabını atla geçme!</div>
+      </div>
+      <div style="background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--orange);font-weight:700;margin-bottom:6px">⚡ LED Akımı</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">LED'e her zaman seri direnç bağla! Dirençsiz LED doğrudan voltaja bağlanırsa anında bozulur.</div>
+      </div>
+      <div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);border-radius:8px;padding:14px">
+        <div style="color:var(--green);font-weight:700;margin-bottom:6px">🔌 Topraklama</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">PCB'de güçlü bir GND düzlemi kullan. Yanlış topraklama gürültü ve kararsız çalışmaya yol açar.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== HESAPLAMALAR ======== -->
+<div class="section" id="section-hesap">
+  <h2 style="margin-bottom:20px;font-size:20px">🧮 Devre Hesaplamaları</h2>
+  <div class="grid-2">
+
+    <!-- Ohm Yasası -->
+    <div class="card">
+      <div class="card-title">⚡ Ohm Yasası</div>
+      <div class="grid-2" style="gap:10px">
+        <div class="field"><label>Gerilim (V)</label><input type="number" id="ohm_v" placeholder="Volt"></div>
+        <div class="field"><label>Akım (A)</label><input type="number" id="ohm_i" placeholder="Amper"></div>
+        <div class="field"><label>Direnç (Ω)</label><input type="number" id="ohm_r" placeholder="Ohm"></div>
+        <div class="field"><label>Güç (W)</label><input type="number" id="ohm_p" placeholder="Watt"></div>
+      </div>
+      <button class="btn btn-primary" onclick="calcOhm()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="ohm_result"><span style="color:var(--muted);font-size:13px">Herhangi 2 değer girin</span></div>
+      <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:6px;font-size:11px;color:var(--muted)">
+        V = I × R &nbsp;|&nbsp; P = V × I &nbsp;|&nbsp; P = I² × R &nbsp;|&nbsp; P = V² / R
+      </div>
+    </div>
+
+    <!-- Gerilim Bölücü -->
+    <div class="card">
+      <div class="card-title">🔀 Gerilim Bölücü</div>
+      <div class="field"><label>Giriş Gerilimi Vin (V)</label><input type="number" id="vd_vin" placeholder="örn. 5"></div>
+      <div class="field"><label>R1 (Ω)</label><input type="number" id="vd_r1" placeholder="örn. 10000"></div>
+      <div class="field"><label>R2 (Ω)</label><input type="number" id="vd_r2" placeholder="örn. 10000"></div>
+      <button class="btn btn-primary" onclick="calcVDiv()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="vd_result"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Vout = Vin × R2 / (R1 + R2)</div>
+    </div>
+
+    <!-- LED Direnci -->
+    <div class="card">
+      <div class="card-title">💡 LED Seri Direnç Hesabı</div>
+      <div class="field"><label>Kaynak Gerilimi Vs (V)</label><input type="number" id="led_vs" value="5" placeholder="5"></div>
+      <div class="field"><label>LED İleri Gerilim Vf (V)</label>
+        <select id="led_vf">
+          <option value="1.8">Kırmızı / Sarı — 1.8V</option>
+          <option value="2.1">Yeşil — 2.1V</option>
+          <option value="3.2" selected>Mavi / Beyaz — 3.2V</option>
+          <option value="custom">Özel...</option>
+        </select>
+      </div>
+      <div class="field" id="led_vf_custom_wrap" style="display:none"><label>Özel Vf (V)</label><input type="number" id="led_vf_custom" placeholder="2.5"></div>
+      <div class="field"><label>LED Akımı If (mA)</label><input type="number" id="led_if" value="20" placeholder="20"></div>
+      <button class="btn btn-primary" onclick="calcLED()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="led_result"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">R = (Vs − Vf) / If</div>
+    </div>
+
+    <!-- RC Devresi -->
+    <div class="card">
+      <div class="card-title">⏱️ RC Zaman Sabiti</div>
+      <div class="field"><label>Direnç R (Ω)</label><input type="number" id="rc_r" placeholder="örn. 10000"></div>
+      <div class="field"><label>Kapasitans C</label>
+        <div style="display:flex;gap:8px">
+          <input type="number" id="rc_c" placeholder="örn. 100" style="flex:1">
+          <select id="rc_cu" style="width:80px;padding:10px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text)">
+            <option value="1e-12">pF</option>
+            <option value="1e-9">nF</option>
+            <option value="1e-6" selected>μF</option>
+            <option value="1e-3">mF</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="calcRC()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="rc_result"></div>
+      <canvas id="rc_canvas" height="120" style="width:100%;margin-top:12px;border-radius:6px;background:#000;border:1px solid var(--border)"></canvas>
+    </div>
+
+    <!-- Rezonans Frekansı -->
+    <div class="card">
+      <div class="card-title">〜 LC Rezonans Frekansı</div>
+      <div class="field"><label>Endüktans L (mH)</label><input type="number" id="lc_l" placeholder="örn. 10"></div>
+      <div class="field"><label>Kapasitans C (μF)</label><input type="number" id="lc_c" placeholder="örn. 100"></div>
+      <button class="btn btn-primary" onclick="calcLC()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="lc_result"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">f = 1 / (2π√(LC))</div>
+    </div>
+
+    <!-- Op-Amp -->
+    <div class="card">
+      <div class="card-title">🔊 Op-Amp Kazanç Hesabı</div>
+      <div class="field"><label>Konfigürasyon</label>
+        <select id="oa_type" onchange="updateOpAmp()">
+          <option value="inv">Ters Çevirici (Inverting)</option>
+          <option value="noninv">Ters Çevirmez (Non-Inverting)</option>
+          <option value="diff">Diferansiyel</option>
+        </select>
+      </div>
+      <div class="field"><label>Rf — Geri Besleme Direnci (kΩ)</label><input type="number" id="oa_rf" placeholder="örn. 100"></div>
+      <div class="field"><label>Rin — Giriş Direnci (kΩ)</label><input type="number" id="oa_rin" placeholder="örn. 10"></div>
+      <div class="field"><label>Vin (V)</label><input type="number" id="oa_vin" placeholder="örn. 1"></div>
+      <button class="btn btn-primary" onclick="calcOpAmp()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="oa_result"></div>
+    </div>
+
+    <!-- Direnç Renkli Bant -->
+    <div class="card">
+      <div class="card-title">🎨 Direnç Renk Kodu</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">4-Bant direnç — renkleri seçin:</div>
+      <div id="r_visual" class="resistor-visual">
+        <div class="r-lead"></div>
+        <div class="r-body" id="r_body">
+          <div class="r-band" id="rb1" style="background:#000000"></div>
+          <div class="r-band" id="rb2" style="background:#964B00"></div>
+          <div class="r-band" id="rb3" style="background:#FF0000"></div>
+          <div class="r-band" id="rb4" style="background:#FFD700"></div>
+        </div>
+        <div class="r-lead"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-align:center">Bant 1</div>
+          <select id="r_b1" class="band-sel" onchange="updateResistor()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px"></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-align:center">Bant 2</div>
+          <select id="r_b2" class="band-sel" onchange="updateResistor()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px"></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-align:center">Çarpan</div>
+          <select id="r_b3" class="band-sel" onchange="updateResistor()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px"></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-align:center">Tolerans</div>
+          <select id="r_b4" class="band-sel" onchange="updateResistor()" style="width:100%;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px"></select>
+        </div>
+      </div>
+      <div class="result-box" id="r_result"></div>
+    </div>
+
+    <!-- Kapasitif / İndüktif Reaktans -->
+    <div class="card">
+      <div class="card-title">〰️ Reaktans Hesabı</div>
+      <div class="field"><label>Frekans f (Hz)</label><input type="number" id="rx_f" placeholder="örn. 1000"></div>
+      <div class="field"><label>Kapasitans C (μF)</label><input type="number" id="rx_c" placeholder="örn. 10"></div>
+      <div class="field"><label>Endüktans L (mH)</label><input type="number" id="rx_l" placeholder="örn. 10"></div>
+      <button class="btn btn-primary" onclick="calcReactance()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="rx_result"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">Xc = 1/(2πfC) &nbsp;|&nbsp; XL = 2πfL</div>
+    </div>
+
+    <!-- Transformatör -->
+    <div class="card">
+      <div class="card-title">🔁 Transformatör Hesabı</div>
+      <div class="field"><label>Birincil Gerilim V1 (V)</label><input type="number" id="tr_v1" placeholder="örn. 220"></div>
+      <div class="field"><label>Birincil Sarım N1</label><input type="number" id="tr_n1" placeholder="örn. 1000"></div>
+      <div class="field"><label>İkincil Sarım N2</label><input type="number" id="tr_n2" placeholder="örn. 100"></div>
+      <div class="field"><label>Birincil Akım I1 (A)</label><input type="number" id="tr_i1" placeholder="örn. 0.1"></div>
+      <button class="btn btn-primary" onclick="calcTransformer()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="tr_result"></div>
+    </div>
+
+    <!-- dB Dönüştürücü -->
+    <div class="card">
+      <div class="card-title">📊 Desibel Dönüştürücü</div>
+      <div class="field"><label>Giriş Voltajı Vin (V)</label><input type="number" id="db_vin" placeholder="örn. 1"></div>
+      <div class="field"><label>Çıkış Voltajı Vout (V)</label><input type="number" id="db_vout" placeholder="örn. 10"></div>
+      <div class="field"><label>veya dB değeri</label><input type="number" id="db_db" placeholder="örn. 20"></div>
+      <button class="btn btn-primary" onclick="calcDB()" style="width:100%">Hesapla</button>
+      <div class="result-box" id="db_result"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted)">dB = 20 × log₁₀(Vout/Vin)</div>
+    </div>
+
+  </div><!-- /grid-2 -->
+</div><!-- /hesap -->
+
+<!-- ======== PCB ======== -->
+<div class="section" id="section-pcb">
+  <h2 style="margin-bottom:20px;font-size:20px">🖥️ PCB Tasarım Rehberi</h2>
+  <div class="grid-2">
+
+    <div>
+      <div class="card">
+        <div class="card-title">📏 İz Genişliği Hesabı</div>
+        <div class="field"><label>Akım (A)</label><input type="number" id="tw_i" placeholder="örn. 1"></div>
+        <div class="field"><label>Bakır Kalınlığı</label>
+          <select id="tw_oz" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text)">
+            <option value="0.035">1 oz (35μm)</option>
+            <option value="0.07">2 oz (70μm)</option>
+            <option value="0.105">3 oz (105μm)</option>
+          </select>
+        </div>
+        <div class="field"><label>Sıcaklık Artışı ΔT (°C)</label><input type="number" id="tw_dt" value="10" placeholder="10"></div>
+        <button class="btn btn-primary" onclick="calcTraceWidth()" style="width:100%">Hesapla</button>
+        <div class="result-box" id="tw_result"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">IPC-2221 standardına göre — Dış katman için</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:var(--orange)">⚠️ Dikkat Edilmesi Gereken Hatalar</div>
+        <div class="pcb-tip pcb-warn"><div class="pcb-tip-title">⛔ Bypass Kapasitör Eksikliği</div><div class="pcb-tip-body">Her IC'nin VCC pinlerine 100nF bypass kapasitör koy. Mümkün olduğu kadar pinin yakınına yerleştir. Yoksa güç gürültüsü IC'yi kararsız çalıştırır.</div></div>
+        <div class="pcb-tip pcb-warn"><div class="pcb-tip-title">⛔ Çok İnce Via Kullanımı</div><div class="pcb-tip-body">Yüksek akım yollarında via direnci önemlidir. 1A üzeri akımlar için birden fazla via paralel kullan veya daha büyük via çapı seç.</div></div>
+        <div class="pcb-tip pcb-warn"><div class="pcb-tip-title">⛔ Yılan Şeklinde İzler</div><div class="pcb-tip-body">90° köşe yerine 45° veya yay kullan. 90° köşeler asit kapanı oluşturabilir ve yüksek frekanslarda yansımaya neden olur.</div></div>
+        <div class="pcb-tip pcb-warn"><div class="pcb-tip-title">⛔ GND Adası Oluşturma</div><div class="pcb-tip-body">GND düzleminin bölünmesine izin verme. Kopuk GND adaları parazit ve kararsız çalışmaya yol açar.</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title" style="color:var(--green)">✅ Profesyonel İpuçları</div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ Güç ve GND Düzlemi</div><div class="pcb-tip-body">4 katmanlı PCB'de: Top (sinyal), GND düzlemi, VCC düzlemi, Bottom (sinyal). Bu düzen mükemmel EMI koruması sağlar.</div></div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ Yüksek Hızlı Sinyal Yönlendirme</div><div class="pcb-tip-body">Diferansiyel çiftleri (USB, LVDS, Ethernet) eşit uzunlukta tut. Uzunluk farkı maksimum 0.1mm olmalı.</div></div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ Bileşen Yerleşimi</div><div class="pcb-tip-body">Sinyali giriş → işleme → çıkış akışına göre yerleştir. Güç devrelerini sinyal devrelerinden uzak tut.</div></div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ Test Noktaları</div><div class="pcb-tip-body">Kritik sinyallere ve güç raylarına test noktaları ekle. Üretim ve hata ayıklama sürecini büyük ölçüde kolaylaştırır.</div></div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ Silkscreen Düzeni</div><div class="pcb-tip-body">Her bileşenin referans designatörünü ve değerini belirt. Kutuplu bileşenler için (+) yönünü mutlaka işaretle.</div></div>
+        <div class="pcb-tip pcb-ok"><div class="pcb-tip-title">✅ DRC Kontrol Listesi</div><div class="pcb-tip-body">Üretim öncesi: minimum iz/boşluk kuralları, açık net uyarıları, delik boyutları ve solder mask genişliğini kontrol et.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📐 Standart Üretim Toleransları</div>
+        <table class="ftable">
+          <tr><th>Parametre</th><th>Standart</th><th>Fine-Pitch</th></tr>
+          <tr><td>Min. İz Genişliği</td><td style="color:var(--green)">0.127mm</td><td style="color:var(--cyan)">0.075mm</td></tr>
+          <tr><td>Min. İz Boşluğu</td><td style="color:var(--green)">0.127mm</td><td style="color:var(--cyan)">0.075mm</td></tr>
+          <tr><td>Min. Via Deliği</td><td style="color:var(--green)">0.3mm</td><td style="color:var(--cyan)">0.15mm</td></tr>
+          <tr><td>Min. Via Pad</td><td style="color:var(--green)">0.6mm</td><td style="color:var(--cyan)">0.3mm</td></tr>
+          <tr><td>Bakır Toleransı</td><td style="color:var(--green)">±15%</td><td style="color:var(--cyan)">±10%</td></tr>
+          <tr><td>Katman Hizalama</td><td style="color:var(--green)">±0.1mm</td><td style="color:var(--cyan)">±0.05mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ======== ROADMAP ======== -->
+<div class="section" id="section-roadmap">
+  <h2 style="margin-bottom:8px;font-size:20px">🗺️ Elektrik Elektronik Öğrenme Yolu</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Başlangıçtan uzman seviyeye giden yol haritası</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div>
+      <div class="roadmap">
+        <div class="rm-item done">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">1. Temel Devre Teorisi <span class="rm-badge badge-beginner">Başlangıç</span></div>
+            <div class="rm-desc">Ohm Yasası, Kirchhoff Akım/Gerilim Yasaları (KCL/KVL), Seri-Paralel devreler, Süperpozisyon, Thevenin/Norton teoremleri</div>
+            <div class="rm-tags"><span class="tag">Ohm</span><span class="tag">KCL/KVL</span><span class="tag">Thevenin</span></div>
+          </div>
+        </div>
+        <div class="rm-item done">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">2. Elektronik Bileşenler <span class="rm-badge badge-beginner">Başlangıç</span></div>
+            <div class="rm-desc">Direnç, Kondansatör, Bobin, Diyot, Transistör (BJT/MOSFET), LED, Zener diyot, Transformatör</div>
+            <div class="rm-tags"><span class="tag">BJT</span><span class="tag">MOSFET</span><span class="tag">Diyot</span></div>
+          </div>
+        </div>
+        <div class="rm-item done">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">3. AC Devre Analizi <span class="rm-badge badge-beginner">Başlangıç</span></div>
+            <div class="rm-desc">Fasor analizi, Empedans, Reaktans, Rezonans, Güç faktörü, RLC devreleri, Frekans analizi</div>
+            <div class="rm-tags"><span class="tag">Fasor</span><span class="tag">Empedans</span><span class="tag">Rezonans</span></div>
+          </div>
+        </div>
+        <div class="rm-item current">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">4. Analog Elektronik <span class="rm-badge badge-intermediate">Orta</span></div>
+            <div class="rm-desc">Op-Amp devreleri, Filtreler (aktif/pasif), Osilatörler, Güç kaynakları, Karşılaştırıcılar, ADC/DAC temelleri</div>
+            <div class="rm-tags"><span class="tag">Op-Amp</span><span class="tag">Filtre</span><span class="tag">Osilatör</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">5. Dijital Elektronik <span class="rm-badge badge-intermediate">Orta</span></div>
+            <div class="rm-desc">Boolean cebri, Mantık kapıları, Flip-flop, Sayıcılar, Kayıtçılar, Kombinasyonel/Sıralı devreler</div>
+            <div class="rm-tags"><span class="tag">Mantık</span><span class="tag">Flip-flop</span><span class="tag">CMOS</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">6. Mikrodenetleyiciler <span class="rm-badge badge-intermediate">Orta</span></div>
+            <div class="rm-desc">Arduino, STM32, PIC — GPIO, Timer, UART/SPI/I2C, ADC, PWM, Interrupt programlama</div>
+            <div class="rm-tags"><span class="tag">Arduino</span><span class="tag">STM32</span><span class="tag">I2C/SPI</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="roadmap">
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">7. PCB Tasarımı <span class="rm-badge badge-intermediate">Orta</span></div>
+            <div class="rm-desc">KiCad / Altium Designer, Şematik çizim, PCB layout, DRC/ERC, Gerber dosyası üretimi, Üretim verme</div>
+            <div class="rm-tags"><span class="tag">KiCad</span><span class="tag">Altium</span><span class="tag">Gerber</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">8. Gömülü Sistemler <span class="rm-badge badge-advanced">İleri</span></div>
+            <div class="rm-desc">RTOS, Linux gömülü sistemler, Bootloader, Bellek yönetimi, DMA, HAL kütüphaneleri, FreeRTOS</div>
+            <div class="rm-tags"><span class="tag">RTOS</span><span class="tag">Linux</span><span class="tag">FreeRTOS</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">9. Güç Elektroniği <span class="rm-badge badge-advanced">İleri</span></div>
+            <div class="rm-desc">Buck/Boost/Buck-Boost dönüştürücüler, SMPS tasarımı, PFC, Motor sürücüler, Inverter, IGBT/SiC MOSFET</div>
+            <div class="rm-tags"><span class="tag">SMPS</span><span class="tag">Buck/Boost</span><span class="tag">Motor</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">10. Sinyal İşleme <span class="rm-badge badge-advanced">İleri</span></div>
+            <div class="rm-desc">Fourier Dönüşümü, FFT, FIR/IIR filtreler, DSP, Örnekleme teoremi (Nyquist), Spektrum analizi</div>
+            <div class="rm-tags"><span class="tag">FFT</span><span class="tag">DSP</span><span class="tag">FIR/IIR</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">11. RF / Kablosuz <span class="rm-badge badge-expert">Uzman</span></div>
+            <div class="rm-desc">Anten tasarımı, Empedans eşleşmesi, Smith şeması, RF filtreler, Bluetooth/WiFi/LoRa protokolleri</div>
+            <div class="rm-tags"><span class="tag">Anten</span><span class="tag">Smith</span><span class="tag">LoRa</span></div>
+          </div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-dot"></div>
+          <div class="rm-card">
+            <div class="rm-title">12. FPGA Programlama <span class="rm-badge badge-expert">Uzman</span></div>
+            <div class="rm-desc">VHDL / Verilog, Xilinx / Intel FPGA, Timing analizi, IP core kullanımı, Paralel donanım tasarımı</div>
+            <div class="rm-tags"><span class="tag">VHDL</span><span class="tag">Verilog</span><span class="tag">Xilinx</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== FORMÜLLER ======== -->
+<div class="section" id="section-formul">
+  <h2 style="margin-bottom:20px;font-size:20px">📐 Formüller ve Sabitler</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⚡ Temel Devre Formülleri</div>
+      <table class="ftable">
+        <tr><th>Ad</th><th>Formül</th><th>Birim</th></tr>
+        <tr><td>Ohm Yasası</td><td class="formula">V = I × R</td><td>V, A, Ω</td></tr>
+        <tr><td>Güç</td><td class="formula">P = V × I = I²R = V²/R</td><td>W</td></tr>
+        <tr><td>Enerji</td><td class="formula">E = P × t</td><td>J (Wh)</td></tr>
+        <tr><td>Gerilim Bölücü</td><td class="formula">Vout = Vin × R2/(R1+R2)</td><td>V</td></tr>
+        <tr><td>Kirchhoff KVL</td><td class="formula">ΣV = 0</td><td>V</td></tr>
+        <tr><td>Kirchhoff KCL</td><td class="formula">ΣI = 0</td><td>A</td></tr>
+        <tr><td>Seri Direnç</td><td class="formula">Rt = R1+R2+R3...</td><td>Ω</td></tr>
+        <tr><td>Paralel Direnç</td><td class="formula">1/Rt = 1/R1+1/R2...</td><td>Ω</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">〜 AC ve Reaktif Devreler</div>
+      <table class="ftable">
+        <tr><th>Ad</th><th>Formül</th><th>Birim</th></tr>
+        <tr><td>Kapasitif Reaktans</td><td class="formula">Xc = 1/(2πfC)</td><td>Ω</td></tr>
+        <tr><td>İndüktif Reaktans</td><td class="formula">XL = 2πfL</td><td>Ω</td></tr>
+        <tr><td>Empedans (RLC)</td><td class="formula">Z = √(R²+(XL-Xc)²)</td><td>Ω</td></tr>
+        <tr><td>Rezonans Frek.</td><td class="formula">f = 1/(2π√LC)</td><td>Hz</td></tr>
+        <tr><td>RC Zaman Sabiti</td><td class="formula">τ = R × C</td><td>s</td></tr>
+        <tr><td>RL Zaman Sabiti</td><td class="formula">τ = L / R</td><td>s</td></tr>
+        <tr><td>Güç Faktörü</td><td class="formula">PF = cos(φ) = R/Z</td><td>—</td></tr>
+        <tr><td>RMS Gerilim</td><td class="formula">Vrms = Vpeak / √2</td><td>V</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">🔊 Op-Amp Formülleri</div>
+      <table class="ftable">
+        <tr><th>Konfigürasyon</th><th>Formül</th></tr>
+        <tr><td>Ters Çevirici</td><td class="formula">Vout = -(Rf/Rin) × Vin</td></tr>
+        <tr><td>Ters Çevirmez</td><td class="formula">Vout = (1 + Rf/R1) × Vin</td></tr>
+        <tr><td>Voltaj Takipçisi</td><td class="formula">Vout = Vin (A=1)</td></tr>
+        <tr><td>Diferansiyel</td><td class="formula">Vout = (Rf/R1)(V2-V1)</td></tr>
+        <tr><td>Toplayıcı</td><td class="formula">Vout = -(Rf)(V1/R1+V2/R2)</td></tr>
+        <tr><td>İntegratör</td><td class="formula">Vout = -1/(RC) ∫Vin dt</td></tr>
+        <tr><td>Türevleyici</td><td class="formula">Vout = -RC × dVin/dt</td></tr>
+        <tr><td>Karşılaştırıcı</td><td class="formula">Vout = A×(V+ - V-)</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">💻 Dijital Elektronik</div>
+      <table class="ftable">
+        <tr><th>Konu</th><th>Formül / Kural</th></tr>
+        <tr><td>Shannon Teoremi</td><td class="formula">fs ≥ 2 × fmax</td></tr>
+        <tr><td>Çözünürlük (ADC)</td><td class="formula">LSB = Vref / 2ⁿ</td></tr>
+        <tr><td>Fan-Out</td><td class="formula">N = Iol / Iil</td></tr>
+        <tr><td>Propagasyon Gecikmesi</td><td class="formula">tpd (ns)</td></tr>
+        <tr><td>Setup Zamanı</td><td class="formula">tsetup = min. giriş süresi</td></tr>
+        <tr><td>Max Frekans</td><td class="formula">fmax = 1 / (tpd+tsetup)</td></tr>
+        <tr><td>Güç Tüketimi CMOS</td><td class="formula">P = α × C × V² × f</td></tr>
+        <tr><td>dB Voltaj</td><td class="formula">dB = 20×log₁₀(Vout/Vin)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ======== SİMÜLASYON ======== -->
+<div class="section" id="section-sim">
+  <h2 style="margin-bottom:20px;font-size:20px">📊 Sinyal Simülatörü</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📈 Osiloskop Simülatörü</div>
+      <canvas id="osc-canvas" height="200"></canvas>
+      <div class="osc-controls">
+        <div class="osc-control">Dalga:
+          <button class="wave-btn active" onclick="setWave('sin',this)">Sinüs</button>
+          <button class="wave-btn" onclick="setWave('square',this)">Kare</button>
+          <button class="wave-btn" onclick="setWave('tri',this)">Üçgen</button>
+          <button class="wave-btn" onclick="setWave('saw',this)">Testere</button>
+        </div>
+        <div class="osc-control">Frekans: <input type="range" id="osc_freq" min="1" max="20" value="3" oninput="updateOscLabel()"> <span id="osc_freq_lbl">3 Hz</span></div>
+        <div class="osc-control">Genlik: <input type="range" id="osc_amp" min="10" max="90" value="70" oninput="updateOscLabel()"> <span id="osc_amp_lbl">70%</span></div>
+        <div class="osc-control">CH2: <input type="checkbox" id="osc_ch2" onchange="toggleCH2()"> <span style="color:var(--orange)">CH2</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Elektron Akışı Animasyonu</div>
+      <canvas id="electron-canvas" height="200"></canvas>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="osc-control">Hız: <input type="range" id="el_speed" min="1" max="10" value="4"> </div>
+        <div class="osc-control">
+          <button class="wave-btn active" onclick="setCircuit('series',this)">Seri</button>
+          <button class="wave-btn" onclick="setCircuit('parallel',this)">Paralel</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">Konvansiyonel akım: (+) → (−) &nbsp;|&nbsp; Elektron: (−) → (+)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:0">
+    <div class="card-title">📉 RC Şarj / Deşarj Eğrisi</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+      <div class="field" style="margin:0;flex:1;min-width:120px"><label>R (kΩ)</label><input type="number" id="rcc_r" value="10" min="0.1"></div>
+      <div class="field" style="margin:0;flex:1;min-width:120px"><label>C (μF)</label><input type="number" id="rcc_c" value="100" min="0.1"></div>
+      <div class="field" style="margin:0;flex:1;min-width:120px"><label>V kaynak</label><input type="number" id="rcc_v" value="5" min="0.1"></div>
+      <button class="btn btn-primary" onclick="drawRCCurve()">Çiz</button>
+    </div>
+    <canvas id="rcc-canvas" height="200" style="width:100%;background:#000;border-radius:8px;border:1px solid var(--border)"></canvas>
+  </div>
+</div>
+
+</main>
+</div><!-- /app -->
+
+<script>
+// ============ NAVIGATION ============
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='sim'){setTimeout(()=>{initOsc();initElectron();drawRCCurve();},100);}
+}
+
+// ============ PCB BACKGROUND ============
+(function(){
+  const c=document.getElementById('pcb-bg');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;draw();}
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.strokeStyle='#00ff88';ctx.lineWidth=1;
+    const gs=40;
+    for(let x=0;x<c.width;x+=gs){
+      for(let y=0;y<c.height;y+=gs){
+        if(Math.random()>0.7){
+          ctx.beginPath();
+          const r=Math.floor(Math.random()*3);
+          if(r===0){ctx.moveTo(x,y);ctx.lineTo(x+gs,y);}
+          else if(r===1){ctx.moveTo(x,y);ctx.lineTo(x,y+gs);}
+          else{ctx.moveTo(x,y);ctx.lineTo(x+gs,y);ctx.moveTo(x+gs,y);ctx.lineTo(x+gs,y+gs);}
+          ctx.stroke();
+          if(Math.random()>0.8){
+            ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+  window.addEventListener('resize',resize);
+  resize();
+})();
+
+// ============ TIPS ============
+const tips=[
+  "🔋 <b>Bypass Kapasitör:</b> Her IC'nin VCC pinine mümkün olduğunca yakın 100nF seramik kapasitör ekle. Bu, yüksek frekanslı gürültüyü filtreler.",
+  "⚡ <b>Güç Kaybı:</b> Bir transistörün kolektöründeki güç kaybı P = Vce × Ic formülüyle hesaplanır. Isı alıcı boyutlandırmasını buna göre yap.",
+  "🎯 <b>MOSFET Gate Direnci:</b> Gate'e seri 10-100Ω direnç koyarak yüksek frekanslı osilatif davranışı önleyebilirsin.",
+  "📏 <b>PCB İz Kuralı:</b> 1A akım için en az 0.25mm iz genişliği (1oz bakır, ΔT=10°C). Güç hatları için her zaman daha geniş iz kullan.",
+  "🔌 <b>Besleme Geçişi:</b> Lineer regülatörden SMPS'e geçmek güç verimliliğini %40'tan %90+'ya çıkarabilir. Ama EMI tasarımına dikkat!",
+  "🧲 <b>Ferrit Boncuk:</b> USB veya hassas analog hatlarına seri ferrit boncuk eklemek yüksek frekans gürültüsünü etkili biçimde süzer.",
+  "📡 <b>Anten İpucu:</b> 2.4GHz için λ/4 anten uzunluğu yaklaşık 31mm'dir. PCB antenin altında bakır bölge bırakma!",
+  "🌡️ <b>Termal:</b> Tj = Ta + (Pd × θja). Junction sıcaklığını max değerin %80'i altında tut — ömür için kritik.",
+  "⚠️ <b>Elektrolit Kondansatör:</b> 105°C'lik kondansatörler, 85°C'liğe kıyasla 4 kat daha uzun ömürlüdür. Güç devrelerinde 105°C seç!",
+  "🔧 <b>Lehim İpucu:</b> İnce uçlu havya kullan, flux ekle ve lehim telini önce pade ver. Solder bridge oluşmasını önlemek için minimum lehim kullan.",
+];
+let tipIdx=0;
+function nextTip(){tipIdx=(tipIdx+1)%tips.length;document.getElementById('tip-box').innerHTML=tips[tipIdx];}
+document.getElementById('tip-box').innerHTML=tips[0];
+
+// ============ TOAST ============
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ============ QUICK OHM ============
+function quickOhm(){
+  const v=parseFloat(document.getElementById('q_v').value);
+  const i=parseFloat(document.getElementById('q_i').value);
+  const r=parseFloat(document.getElementById('q_r').value);
+  const p=parseFloat(document.getElementById('q_p').value);
+  const el=document.getElementById('q_result');
+  let res=[];let cv=v,ci=i,cr=r,cp=p;
+  const known=[!isNaN(v),!isNaN(i),!isNaN(r),!isNaN(p)].filter(Boolean).length;
+  if(known<2){el.innerHTML='<span style="color:var(--muted)">En az 2 değer girin</span>';return;}
+  if(!isNaN(v)&&!isNaN(i)){cr=v/i;cp=v*i;}
+  else if(!isNaN(v)&&!isNaN(r)){ci=v/r;cp=v*ci;}
+  else if(!isNaN(i)&&!isNaN(r)){cv=i*r;cp=cv*i;}
+  else if(!isNaN(v)&&!isNaN(p)){ci=p/v;cr=v/ci;}
+  else if(!isNaN(i)&&!isNaN(p)){cv=p/i;cr=cv/i;}
+  else if(!isNaN(r)&&!isNaN(p)){ci=Math.sqrt(p/r);cv=ci*r;}
+  el.innerHTML=`<span class="result-value">V=${fmtN(cv)}V &nbsp; I=${fmtN(ci)}A &nbsp; R=${fmtN(cr)}Ω &nbsp; P=${fmtN(cp)}W</span>`;
+}
+
+function fmtN(n){
+  if(isNaN(n)||!isFinite(n))return '?';
+  if(Math.abs(n)>=1e6)return (n/1e6).toPrecision(4)+'M';
+  if(Math.abs(n)>=1e3)return (n/1e3).toPrecision(4)+'k';
+  if(Math.abs(n)>=1)return parseFloat(n.toPrecision(4)).toString();
+  if(Math.abs(n)>=1e-3)return (n*1e3).toPrecision(4)+'m';
+  if(Math.abs(n)>=1e-6)return (n*1e6).toPrecision(4)+'μ';
+  return n.toPrecision(3);
+}
+
+// ============ CALC OHM ============
+function calcOhm(){
+  const v=parseFloat(document.getElementById('ohm_v').value);
+  const i=parseFloat(document.getElementById('ohm_i').value);
+  const r=parseFloat(document.getElementById('ohm_r').value);
+  const p=parseFloat(document.getElementById('ohm_p').value);
+  let cv=v,ci=i,cr=r,cp=p;
+  const known=[!isNaN(v),!isNaN(i),!isNaN(r),!isNaN(p)].filter(Boolean).length;
+  const el=document.getElementById('ohm_result');
+  if(known<2){el.innerHTML='<span style="color:var(--orange)">En az 2 değer girin!</span>';return;}
+  if(!isNaN(v)&&!isNaN(i)){cr=v/i;cp=v*i;}
+  else if(!isNaN(v)&&!isNaN(r)){ci=v/r;cp=v*ci;}
+  else if(!isNaN(i)&&!isNaN(r)){cv=i*r;cp=cv*i;}
+  else if(!isNaN(v)&&!isNaN(p)){ci=p/v;cr=v/ci;}
+  else if(!isNaN(i)&&!isNaN(p)){cv=p/i;cr=cv/i;}
+  else if(!isNaN(r)&&!isNaN(p)){ci=Math.sqrt(p/r);cv=ci*r;}
+  el.innerHTML=`<div class="result-value">V = ${fmtN(cv)} V</div><div style="color:var(--cyan);font-size:18px;font-weight:700;font-family:monospace;margin-top:6px">I = ${fmtN(ci)} A &nbsp; R = ${fmtN(cr)} Ω &nbsp; P = ${fmtN(cp)} W</div>`;
+}
+
+// ============ VOLTAGE DIVIDER ============
+function calcVDiv(){
+  const vin=parseFloat(document.getElementById('vd_vin').value);
+  const r1=parseFloat(document.getElementById('vd_r1').value);
+  const r2=parseFloat(document.getElementById('vd_r2').value);
+  const el=document.getElementById('vd_result');
+  if(isNaN(vin)||isNaN(r1)||isNaN(r2)){el.innerHTML='<span style="color:var(--orange)">Tüm değerleri girin!</span>';return;}
+  const vout=vin*r2/(r1+r2);
+  const ratio=r2/(r1+r2);
+  const itotal=vin/(r1+r2);
+  el.innerHTML=`<div class="result-value">Vout = ${fmtN(vout)} V</div><div class="result-label">Oran: ${(ratio*100).toFixed(1)}% &nbsp;|&nbsp; Akım: ${fmtN(itotal)}A &nbsp;|&nbsp; Güç: ${fmtN(vin*itotal)}W</div>`;
+}
+
+// ============ LED ============
+document.getElementById('led_vf').addEventListener('change',function(){
+  document.getElementById('led_vf_custom_wrap').style.display=this.value==='custom'?'block':'none';
+});
+function calcLED(){
+  const vs=parseFloat(document.getElementById('led_vs').value);
+  const sel=document.getElementById('led_vf').value;
+  const vf=sel==='custom'?parseFloat(document.getElementById('led_vf_custom').value):parseFloat(sel);
+  const ifma=parseFloat(document.getElementById('led_if').value);
+  const el=document.getElementById('led_result');
+  if(isNaN(vs)||isNaN(vf)||isNaN(ifma)){el.innerHTML='<span style="color:var(--orange)">Tüm değerleri girin!</span>';return;}
+  if(vs<=vf){el.innerHTML='<span style="color:var(--orange)">Vs, Vf\'den büyük olmalı!</span>';return;}
+  const rval=(vs-vf)/(ifma/1000);
+  const pw=(vs-vf)*ifma/1000;
+  const stdR=findStdResistor(rval);
+  el.innerHTML=`<div class="result-value">R = ${fmtN(rval)} Ω</div><div class="result-label">Güç: ${pw.toFixed(3)}W &nbsp;|&nbsp; Önerilen standart: ${stdR}Ω</div>`;
+}
+
+function findStdResistor(r){
+  const e24=[1,1.1,1.2,1.3,1.5,1.6,1.8,2,2.2,2.4,2.7,3,3.3,3.6,3.9,4.3,4.7,5.1,5.6,6.2,6.8,7.5,8.2,9.1];
+  let best=null,bestDiff=Infinity;
+  for(let exp=0;exp<=6;exp++){
+    for(const v of e24){
+      const rv=v*Math.pow(10,exp);
+      const d=Math.abs(rv-r);
+      if(d<bestDiff){bestDiff=d;best=rv;}
+    }
+  }
+  return fmtN(best);
+}
+
+// ============ RC ============
+function calcRC(){
+  const r=parseFloat(document.getElementById('rc_r').value);
+  const c=parseFloat(document.getElementById('rc_c').value)*parseFloat(document.getElementById('rc_cu').value);
+  const el=document.getElementById('rc_result');
+  if(isNaN(r)||isNaN(c)){el.innerHTML='<span style="color:var(--orange)">Değerleri girin!</span>';return;}
+  const tau=r*c;
+  const f3db=1/(2*Math.PI*tau);
+  el.innerHTML=`<div class="result-value">τ = ${fmtN(tau)} s</div><div class="result-label">5τ (tam şarj): ${fmtN(tau*5)}s &nbsp;|&nbsp; -3dB frekansı: ${fmtN(f3db)} Hz</div>`;
+  drawRCCanvas(tau);
+}
+
+function drawRCCanvas(tau){
+  const canvas=document.getElementById('rc_canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth;canvas.height=120;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W=canvas.width,H=canvas.height,pad=20;
+  ctx.strokeStyle='#1e2d40';ctx.lineWidth=1;
+  for(let i=0;i<6;i++){const x=pad+(W-2*pad)*i/5;ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,H-pad);ctx.stroke();}
+  for(let i=0;i<4;i++){const y=pad+(H-2*pad)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();}
+  // Şarj eğrisi
+  ctx.strokeStyle='#00ff88';ctx.lineWidth=2;ctx.beginPath();
+  for(let px=0;px<W-2*pad;px++){
+    const t=px/(W-2*pad)*5*tau;
+    const v=1-Math.exp(-t/tau);
+    const x=pad+px,y=H-pad-(H-2*pad)*v;
+    px===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // Deşarj eğrisi
+  ctx.strokeStyle='#00d4ff';ctx.lineWidth=2;ctx.beginPath();
+  for(let px=0;px<W-2*pad;px++){
+    const t=px/(W-2*pad)*5*tau;
+    const v=Math.exp(-t/tau);
+    const x=pad+px,y=H-pad-(H-2*pad)*v;
+    px===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // τ çizgisi
+  const tauX=pad+(W-2*pad)/5;
+  ctx.strokeStyle='#fbbf24';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(tauX,pad);ctx.lineTo(tauX,H-pad);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#fbbf24';ctx.font='10px monospace';ctx.fillText('τ=63.2%',tauX+4,H-pad-4);
+  ctx.fillStyle='#00ff88';ctx.fillText('Şarj',pad+4,pad+14);
+  ctx.fillStyle='#00d4ff';ctx.fillText('Deşarj',pad+40,pad+14);
+}
+
+// ============ LC ============
+function calcLC(){
+  const l=parseFloat(document.getElementById('lc_l').value)*1e-3;
+  const c=parseFloat(document.getElementById('lc_c').value)*1e-6;
+  const el=document.getElementById('lc_result');
+  if(isNaN(l)||isNaN(c)){el.innerHTML='<span style="color:var(--orange)">Değerleri girin!</span>';return;}
+  const f=1/(2*Math.PI*Math.sqrt(l*c));
+  const omega=2*Math.PI*f;
+  const q=1/1*Math.sqrt(l/c);
+  el.innerHTML=`<div class="result-value">f₀ = ${fmtN(f)} Hz</div><div class="result-label">ω₀ = ${fmtN(omega)} rad/s &nbsp;|&nbsp; λ = ${fmtN(3e8/f)} m</div>`;
+}
+
+// ============ OP-AMP ============
+function calcOpAmp(){
+  const type=document.getElementById('oa_type').value;
+  const rf=parseFloat(document.getElementById('oa_rf').value)*1000;
+  const rin=parseFloat(document.getElementById('oa_rin').value)*1000;
+  const vin=parseFloat(document.getElementById('oa_vin').value);
+  const el=document.getElementById('oa_result');
+  if(isNaN(rf)||isNaN(rin)){el.innerHTML='<span style="color:var(--orange)">Direnç değerlerini girin!</span>';return;}
+  let gain,vout,desc;
+  if(type==='inv'){gain=-(rf/rin);desc='Ters Çevirici';}
+  else if(type==='noninv'){gain=1+rf/rin;desc='Ters Çevirmez';}
+  else{gain=rf/rin;desc='Diferansiyel';}
+  vout=isNaN(vin)?'?':gain*vin;
+  el.innerHTML=`<div class="result-value">Kazanç = ${gain.toFixed(3)} (${(20*Math.log10(Math.abs(gain))).toFixed(1)} dB)</div><div class="result-label">${desc} &nbsp;|&nbsp; Vout${isNaN(vin)?'':' = '+fmtN(vout)+'V'}</div>`;
+}
+
+// ============ RESISTOR COLOR CODE ============
+const COLORS=[
+  {name:'Siyah',hex:'#000000',val:0,mult:1},
+  {name:'Kahve',hex:'#8B4513',val:1,mult:10},
+  {name:'Kırmızı',hex:'#FF0000',val:2,mult:100},
+  {name:'Turuncu',hex:'#FF8C00',val:3,mult:1000},
+  {name:'Sarı',hex:'#FFD700',val:4,mult:10000},
+  {name:'Yeşil',hex:'#228B22',val:5,mult:100000},
+  {name:'Mavi',hex:'#0000FF',val:6,mult:1000000},
+  {name:'Mor',hex:'#8B008B',val:7,mult:10000000},
+  {name:'Gri',hex:'#808080',val:8,mult:0,notMult:true},
+  {name:'Beyaz',hex:'#FFFFFF',val:9,mult:0,notMult:true},
+  {name:'Altın',hex:'#FFD700',val:-1,mult:0.1,tolOnly:true},
+  {name:'Gümüş',hex:'#C0C0C0',val:-1,mult:0.01,tolOnly:true},
+];
+const TOLS={
+  '#FFD700':'±5%','#C0C0C0':'±10%','#8B4513':'±1%','#FF0000':'±2%',
+  '#228B22':'±0.5%','#0000FF':'±0.25%','#8B008B':'±0.1%','#808080':'±0.05%'
+};
+
+function populateResistorSelects(){
+  const main=COLORS.filter(c=>!c.tolOnly);
+  const mults=COLORS.filter(c=>!c.notMult||c.tolOnly===undefined);
+  const tols=[
+    {name:'Altın ±5%',hex:'#FFD700'},{name:'Gümüş ±10%',hex:'#C0C0C0'},
+    {name:'Kahve ±1%',hex:'#8B4513'},{name:'Kırmızı ±2%',hex:'#FF0000'},
+    {name:'Yeşil ±0.5%',hex:'#228B22'},{name:'Mavi ±0.25%',hex:'#0000FF'},
+  ];
+  ['r_b1','r_b2'].forEach(id=>{
+    const sel=document.getElementById(id);
+    main.filter(c=>c.val>=0).forEach(c=>{
+      const o=document.createElement('option');o.value=c.hex;o.textContent=c.name+' ('+c.val+')';sel.appendChild(o);
+    });
+  });
+  const msel=document.getElementById('r_b3');
+  COLORS.filter(c=>!c.tolOnly&&!c.notMult).concat([{name:'Altın ×0.1',hex:'#FFD700',mult:0.1},{name:'Gümüş ×0.01',hex:'#C0C0C0',mult:0.01}]).forEach(c=>{
+    const o=document.createElement('option');o.value=c.hex;o.textContent=c.name;msel.appendChild(o);
+  });
+  const tsel=document.getElementById('r_b4');
+  tols.forEach(c=>{const o=document.createElement('option');o.value=c.hex;o.textContent=c.name;tsel.appendChild(o);});
+  document.getElementById('r_b2').value='#8B4513';
+  document.getElementById('r_b3').value='#FF0000';
+  updateResistor();
+}
+
+function updateResistor(){
+  const b1h=document.getElementById('r_b1').value;
+  const b2h=document.getElementById('r_b2').value;
+  const b3h=document.getElementById('r_b3').value;
+  const b4h=document.getElementById('r_b4').value;
+  document.getElementById('rb1').style.background=b1h;
+  document.getElementById('rb2').style.background=b2h;
+  document.getElementById('rb3').style.background=b3h;
+  document.getElementById('rb4').style.background=b4h;
+  const c1=COLORS.find(c=>c.hex===b1h&&c.val>=0);
+  const c2=COLORS.find(c=>c.hex===b2h&&c.val>=0);
+  const c3m=[...COLORS,{hex:'#FFD700',mult:0.1},{hex:'#C0C0C0',mult:0.01}].find(c=>c.hex===b3h&&c.mult!==undefined);
+  const tol=TOLS[b4h]||'?';
+  if(c1&&c2&&c3m){
+    const val=(c1.val*10+c2.val)*c3m.mult;
+    document.getElementById('r_result').innerHTML=`<div class="result-value">${fmtN(val)} Ω</div><div class="result-label">Tolerans: ${tol}</div>`;
+  }
+}
+
+// ============ REACTANCE ============
+function calcReactance(){
+  const f=parseFloat(document.getElementById('rx_f').value);
+  const c=parseFloat(document.getElementById('rx_c').value)*1e-6;
+  const l=parseFloat(document.getElementById('rx_l').value)*1e-3;
+  const el=document.getElementById('rx_result');
+  if(isNaN(f)){el.innerHTML='<span style="color:var(--orange)">Frekansı girin!</span>';return;}
+  let html='';
+  if(!isNaN(c)&&c>0){const xc=1/(2*Math.PI*f*c);html+=`<div>Xc = <b style="color:var(--green)">${fmtN(xc)} Ω</b></div>`;}
+  if(!isNaN(l)&&l>0){const xl=2*Math.PI*f*l;html+=`<div>XL = <b style="color:var(--cyan)">${fmtN(xl)} Ω</b></div>`;}
+  el.innerHTML=html||'<span style="color:var(--orange)">C veya L değeri girin!</span>';
+}
+
+// ============ TRANSFORMER ============
+function calcTransformer(){
+  const v1=parseFloat(document.getElementById('tr_v1').value);
+  const n1=parseFloat(document.getElementById('tr_n1').value);
+  const n2=parseFloat(document.getElementById('tr_n2').value);
+  const i1=parseFloat(document.getElementById('tr_i1').value);
+  const el=document.getElementById('tr_result');
+  if(isNaN(v1)||isNaN(n1)||isNaN(n2)){el.innerHTML='<span style="color:var(--orange)">V1, N1, N2 girin!</span>';return;}
+  const v2=v1*n2/n1;
+  const i2=isNaN(i1)?NaN:i1*n1/n2;
+  const p=isNaN(i1)?NaN:v1*i1;
+  el.innerHTML=`<div class="result-value">V2 = ${fmtN(v2)} V</div><div class="result-label">Oran: ${(n1/n2).toFixed(3)}:1 ${!isNaN(i2)?'&nbsp;|&nbsp; I2 = '+fmtN(i2)+'A':''} ${!isNaN(p)?'&nbsp;|&nbsp; P = '+fmtN(p)+'W':''}</div>`;
+}
+
+// ============ DECIBEL ============
+function calcDB(){
+  const vin=parseFloat(document.getElementById('db_vin').value);
+  const vout=parseFloat(document.getElementById('db_vout').value);
+  const db=parseFloat(document.getElementById('db_db').value);
+  const el=document.getElementById('db_result');
+  if(!isNaN(vin)&&!isNaN(vout)){
+    const dbval=20*Math.log10(vout/vin);
+    el.innerHTML=`<div class="result-value">${dbval.toFixed(3)} dB</div><div class="result-label">Kazanç: ×${(vout/vin).toFixed(4)}</div>`;
+  } else if(!isNaN(db)&&!isNaN(vin)){
+    const voutc=vin*Math.pow(10,db/20);
+    el.innerHTML=`<div class="result-value">Vout = ${fmtN(voutc)} V</div><div class="result-label">Kazanç: ×${Math.pow(10,db/20).toFixed(4)}</div>`;
+  } else {
+    el.innerHTML='<span style="color:var(--orange)">Vin+Vout veya dB+Vin girin!</span>';
+  }
+}
+
+// ============ TRACE WIDTH ============
+function calcTraceWidth(){
+  const i=parseFloat(document.getElementById('tw_i').value);
+  const oz=parseFloat(document.getElementById('tw_oz').value);
+  const dt=parseFloat(document.getElementById('tw_dt').value)||10;
+  const el=document.getElementById('tw_result');
+  if(isNaN(i)){el.innerHTML='<span style="color:var(--orange)">Akım değerini girin!</span>';return;}
+  // IPC-2221 yaklaşık formülü: A = I^1.378 / (k * dT^0.98) — dış katman k=0.048
+  const k=0.048;
+  const area=Math.pow(i,1.378)/(k*Math.pow(dt,0.98)); // mil²
+  const width=area/(oz*1000/35*1.378); // basitleştirilmiş
+  const wMM=(area/(oz/0.035)*0.001*25.4).toFixed(3);
+  const wMil=area/(oz/0.035*1.378);
+  el.innerHTML=`<div class="result-value">~${fmtN(area/1.378*0.0254)} mm</div><div class="result-label">IPC-2221 dış katman, ΔT=${dt}°C &nbsp;|&nbsp; Kesit: ${area.toFixed(1)} mil²</div>`;
+}
+
+// ============ OSCILLOSCOPE ============
+let oscAnimId=null,oscWave='sin',showCH2=false;
+function setWave(w,btn){oscWave=w;document.querySelectorAll('.wave-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function toggleCH2(){showCH2=document.getElementById('osc_ch2').checked;}
+function updateOscLabel(){
+  document.getElementById('osc_freq_lbl').textContent=document.getElementById('osc_freq').value+' Hz';
+  document.getElementById('osc_amp_lbl').textContent=document.getElementById('osc_amp').value+'%';
+}
+
+function initOsc(){
+  const canvas=document.getElementById('osc-canvas');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth;canvas.height=200;
+  if(oscAnimId)cancelAnimationFrame(oscAnimId);
+  let t=0;
+  function draw(){
+    const ctx=canvas.getContext('2d');
+    const W=canvas.width,H=canvas.height;
+    ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fillRect(0,0,W,H);
+    // Grid
+    ctx.strokeStyle='#0a2a0a';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=W/10){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=H/8){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // CH1
+    const freq=parseFloat(document.getElementById('osc_freq').value)||3;
+    const amp=parseFloat(document.getElementById('osc_amp').value)/100||0.7;
+    ctx.strokeStyle='#00ff88';ctx.lineWidth=2;ctx.beginPath();
+    for(let px=0;px<W;px++){
+      const x=px/W*4*Math.PI*freq+t;
+      let y;
+      if(oscWave==='sin') y=Math.sin(x);
+      else if(oscWave==='square') y=Math.sign(Math.sin(x));
+      else if(oscWave==='tri') y=2/Math.PI*Math.asin(Math.sin(x));
+      else y=((x%(2*Math.PI))/(Math.PI)-1);
+      const py=H/2-y*amp*H/2;
+      px===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    if(showCH2){
+      ctx.strokeStyle='#ff6b35';ctx.lineWidth=2;ctx.beginPath();
+      for(let px=0;px<W;px++){
+        const x=px/W*4*Math.PI*freq+t+Math.PI/2;
+        const y=Math.sin(x);
+        const py=H/2-y*amp*0.6*H/2;
+        px===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    }
+    // Labels
+    ctx.fillStyle='#00ff88';ctx.font='11px monospace';ctx.fillText('CH1',6,16);
+    if(showCH2){ctx.fillStyle='#ff6b35';ctx.fillText('CH2',6,30);}
+    ctx.fillStyle='#333';ctx.font='10px monospace';
+    ctx.fillText(`${freq}Hz  ${(amp*100).toFixed(0)}%`,W-80,16);
+    t+=0.05;
+    oscAnimId=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ============ ELECTRON ANIMATION ============
+let elAnimId=null,elCircuit='series';
+function setCircuit(c,btn){elCircuit=c;document.querySelectorAll('.wave-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function initElectron(){
+  const canvas=document.getElementById('electron-canvas');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth;canvas.height=200;
+  if(elAnimId)cancelAnimationFrame(elAnimId);
+  const electrons=[];
+  const W=canvas.width,H=canvas.height;
+  // Seri devre yolu
+  const path=[
+    {x:40,y:H/2},{x:W/4,y:H/2},{x:W/4,y:40},{x:3*W/4,y:40},
+    {x:3*W/4,y:H/2},{x:W-40,y:H/2},{x:W-40,y:H-40},{x:40,y:H-40},{x:40,y:H/2}
+  ];
+  for(let i=0;i<8;i++)electrons.push({t:i/8,seg:0});
+
+  function getPathPos(t){
+    const total=path.length-1;
+    const seg=Math.floor(t*total)%total;
+    const frac=(t*total)%1;
+    const a=path[seg],b=path[(seg+1)%path.length];
+    return{x:a.x+(b.x-a.x)*frac,y:a.y+(b.y-a.y)*frac};
+  }
+
+  let tick=0;
+  function draw(){
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    const speed=parseFloat(document.getElementById('el_speed').value)/100||0.04;
+    // Draw circuit
+    ctx.strokeStyle='#1e4d2b';ctx.lineWidth=3;
+    ctx.beginPath();
+    path.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.stroke();
+    // Battery
+    ctx.fillStyle='#fbbf24';ctx.fillRect(35,H/2-20,10,40);
+    ctx.fillStyle='#0d1320';ctx.fillText('⚡',34,H/2+5);
+    // Resistors
+    [[W/4-5,30,40,20,'R1'],[3*W/4-5,30,40,20,'R2']].forEach(([x,y,w,h,lbl])=>{
+      ctx.fillStyle='#d4a055';ctx.fillRect(x,y,w,h);
+      ctx.fillStyle='#000';ctx.font='10px monospace';ctx.fillText(lbl,x+8,y+14);
+    });
+    // Electrons
+    ctx.fillStyle='#00ff88';
+    electrons.forEach(e=>{
+      e.t=(e.t+speed)%1;
+      const pos=getPathPos(e.t);
+      ctx.beginPath();ctx.arc(pos.x,pos.y,4,0,Math.PI*2);ctx.fill();
+      // Glow
+      const g=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,8);
+      g.addColorStop(0,'rgba(0,255,136,0.4)');g.addColorStop(1,'rgba(0,255,136,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(pos.x,pos.y,8,0,Math.PI*2);ctx.fill();
+    });
+    tick++;
+    elAnimId=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ============ RC CURVE ============
+function drawRCCurve(){
+  const canvas=document.getElementById('rcc-canvas');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth;canvas.height=200;
+  const ctx=canvas.getContext('2d');
+  const r=(parseFloat(document.getElementById('rcc_r').value)||10)*1e3;
+  const c=(parseFloat(document.getElementById('rcc_c').value)||100)*1e-6;
+  const vs=parseFloat(document.getElementById('rcc_v').value)||5;
+  const tau=r*c;
+  const W=canvas.width,H=canvas.height,pad=35;
+  ctx.clearRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='#0a2a1a';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const x=pad+(W-2*pad)*i/5;
+    ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,H-pad);ctx.stroke();
+    ctx.fillStyle='#333';ctx.font='9px monospace';
+    ctx.fillText((tau*i).toFixed(3)+'s',x-12,H-8);
+  }
+  for(let i=0;i<=4;i++){
+    const y=pad+(H-2*pad)*i/4;
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();
+    ctx.fillStyle='#333';ctx.font='9px monospace';
+    ctx.fillText((vs*(1-i/4)).toFixed(1)+'V',2,y+4);
+  }
+  // Şarj
+  ctx.strokeStyle='#00ff88';ctx.lineWidth=2;ctx.beginPath();
+  for(let px=0;px<W-2*pad;px++){
+    const t=px/(W-2*pad)*5*tau;
+    const v=vs*(1-Math.exp(-t/tau));
+    const x=pad+px,y=H-pad-(H-2*pad)*v/vs;
+    px===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // Deşarj
+  ctx.strokeStyle='#00d4ff';ctx.lineWidth=2;ctx.beginPath();
+  for(let px=0;px<W-2*pad;px++){
+    const t=px/(W-2*pad)*5*tau;
+    const v=vs*Math.exp(-t/tau);
+    const x=pad+px,y=H-pad-(H-2*pad)*v/vs;
+    px===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // τ marker
+  const tauX=pad+(W-2*pad)/5;
+  ctx.strokeStyle='#fbbf24';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(tauX,pad);ctx.lineTo(tauX,H-pad);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#fbbf24';ctx.font='10px monospace';ctx.fillText('τ',tauX+3,pad+12);
+  // Legend
+  ctx.fillStyle='#00ff88';ctx.font='11px monospace';ctx.fillText('▬ Şarj',W-90,pad+14);
+  ctx.fillStyle='#00d4ff';ctx.fillText('▬ Deşarj',W-90,pad+28);
+  ctx.fillStyle='#aaa';ctx.fillText(`τ=${fmtN(tau)}s`,W-90,pad+42);
+}
+
+// ============ INIT ============
+window.addEventListener('load',()=>{
+  populateResistorSelects();
+});
+</script>
+</body>
+</html>

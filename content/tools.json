@@ -1,0 +1,56 @@
+[
+  {
+    "slug": "ee_pro.html",
+    "preview": "ee-pro.svg",
+    "category": "Mühendislik",
+    "title": "EE Pro",
+    "description": "Devre hesapları, PCB iz genişliği ve osiloskop simülasyonları tek istasyonda.",
+    "action": "İstasyonu aç",
+    "alt": "EE Pro devre analiz paneli önizlemesi"
+  },
+  {
+    "slug": "eee-akademi.html",
+    "preview": "elektronik-rehberi.svg",
+    "category": "Öğrenme",
+    "title": "Elektrik-Elektronik Rehberi",
+    "description": "EEM temelleri, uzmanlık alanları ve etkileşimli osiloskop örnekleri.",
+    "action": "Rehberi aç",
+    "alt": "Elektrik elektronik rehberi ve osiloskop önizlemesi"
+  },
+  {
+    "slug": "savunma-akademi.html",
+    "preview": "insansiz-sistemler.svg",
+    "category": "Simülasyon",
+    "title": "İnsansız Sistemler",
+    "description": "İHA, İKA ve İDA sistemlerini keşfet; radar taramasını etkileşimli incele.",
+    "action": "Simülasyonu aç",
+    "alt": "İnsansız sistemler için radar simülasyonu önizlemesi"
+  },
+  {
+    "slug": "yz-akademi.html",
+    "preview": "yapay-zeka.svg",
+    "category": "Yapay zekâ",
+    "title": "Yapay Zekâ Dünyası",
+    "description": "Yapay zekâ kavramlarını ve nöral ağların çalışma mantığını görerek öğren.",
+    "action": "Keşfet",
+    "alt": "Yapay sinir ağı ve nöron bağlantıları önizlemesi"
+  },
+  {
+    "slug": "fleet-tracker.html",
+    "preview": "filo-takip.svg",
+    "category": "3B simülasyon",
+    "title": "Küresel Filo Takip",
+    "description": "Uçakların ve gemilerin hareketlerini üç boyutlu küre üzerinde izle.",
+    "action": "Haritayı aç",
+    "alt": "Küresel uçak ve gemi takip simülasyonu önizlemesi"
+  },
+  {
+    "slug": "para-takip.html",
+    "preview": "butce-takip.svg",
+    "category": "Kişisel araç",
+    "title": "Bütçe ve Borç Takip",
+    "description": "Gelirini, giderlerini ve borç ödeme planını tarayıcında hesapla.",
+    "action": "Aracı aç",
+    "alt": "Bütçe özeti ve gider grafiği önizlemesi"
+  }
+]

@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinansPro - Para Programlama & Borç Takip</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        /* Özel Kaydırma Çubuğu */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
+        }
+        .glass-card {
+            backdrop-filter: blur(12px);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Bildirim (Toast) Alanı -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Onay / Düzenleme Modalı -->
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-40 hidden items-center justify-center p-4">
+        <div id="modal-content" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl transform transition-all">
+            <!-- Dinamik Modal İçeriği -->
+        </div>
+    </div>
+
+    <!-- Üst Gezinme Çubuğu (Header) -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 glass-card border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-wallet text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl tracking-tight flex items-center gap-2">
+                        Finans<span class="text-indigo-600 dark:text-indigo-400">Pro</span>
+                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hidden sm:inline-block">Para Programlama</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400" id="current-date-display">Gelir, Gider ve Borç Bitiş Takibi</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openSimulationModal()" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 transition flex items-center gap-1.5" title="Ekstra ödeme yaparsam borçlar ne zaman biter?">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span class="hidden md:inline">Erken Kapama Simülatörü</span>
+                </button>
+
+                <button onclick="confirmResetDemo()" class="px-3 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition flex items-center gap-1.5" title="Örnek verileri geri yükle veya sıfırla">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">Veri Yönetimi</span>
+                </button>
+
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 transition" title="Tema Değiştir">
+                    <i id="theme-icon" class="fa-solid fa-sun"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana İçerik -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- 1. ÜST ÖZET PANELİ (DASHBOARD KARTLARI) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Toplam Aylık Gelir -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Aylık Toplam Gelir</p>
+                        <h2 id="kpi-total-income" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">₺0</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    </div>
+                </div>
+                <p id="kpi-income-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-center gap-1">
+                    <span>Maaş + Ek Gelirler</span>
+                </p>
+            </div>
+
+            <!-- Toplam Aylık Gider (Sabit + Borç Taksitleri) -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Aylık Toplam Çıkış</p>
+                        <h2 id="kpi-total-outflow" class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">₺0</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                    </div>
+                </div>
+                <p id="kpi-outflow-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-3 truncate">
+                    Gider: ₺0 | Taksit: ₺0
+                </p>
+            </div>
+
+            <!-- Net Kalan Nakit Akışı -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Net Kalan (Aylık)</p>
+                        <h2 id="kpi-net-cash" class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">₺0</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-xs">
+                    <span class="text-slate-500 dark:text-slate-400">Tasarruf Oranı:</span>
+                    <span id="kpi-savings-rate" class="font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">%0</span>
+                </div>
+            </div>
+
+            <!-- Toplam Kalan Borç Yükü -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Toplam Kalan Borç</p>
+                        <h2 id="kpi-total-debt" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">₺0</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                </div>
+                <p id="kpi-debt-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-3 truncate">
+                    0 Aktif Borç Kalemi
+                </p>
+            </div>
+
+            <!-- Borçların Tamamen Bitmesine Kalan Süre -->
+            <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-lg shadow-indigo-500/20 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-indigo-200">Borçsuz Hayata Kalan</p>
+                        <h2 id="kpi-debt-free-countdown" class="text-2xl font-extrabold mt-1">Borç Yok</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                    </div>
+                </div>
+                <p id="kpi-debt-free-date" class="text-xs text-indigo-100 mt-3 flex items-center gap-1.5 font-medium">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>Tahmini Bitiş: -</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. GÖRSEL NAKİT AKIŞI VE DAĞILIM BARI -->
+        <section class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-indigo-500"></i>
+                        Aylık Para Programlama & Dağılım Analizi
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Aylık gelirinizin rutin giderlere, borç taksitlerine ve cebinize kalan net tutara oranı</p>
+                </div>
+                <div id="financial-health-badge" class="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    Finansal Durum: Dengeli
+                </div>
+            </div>
+
+            <!-- Çoklu İlerleme Çubuğu (Stacked Bar) -->
+            <div class="w-full h-5 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden flex p-0.5 gap-0.5" id="distribution-bar">
+                <div id="bar-expenses" class="bg-rose-500 h-full transition-all duration-500 rounded-l-lg" style="width: 30%" title="Rutin Giderler"></div>
+                <div id="bar-debts" class="bg-amber-500 h-full transition-all duration-500" style="width: 40%" title="Aylık Borç Ödemeleri"></div>
+                <div id="bar-remaining" class="bg-emerald-500 h-full transition-all duration-500 rounded-r-lg" style="width: 30%" title="Net Kalan Nakit"></div>
+            </div>
+
+            <!-- Bar Açıklamaları (Legend) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                        <span class="font-medium text-slate-600 dark:text-slate-300">Rutin Sabit Giderler</span>
+                    </div>
+                    <span id="legend-expenses" class="font-bold text-slate-800 dark:text-slate-100">₺0 (%0)</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                        <span class="font-medium text-slate-600 dark:text-slate-300">Aylık Borç Taksitleri</span>
+                    </div>
+                    <span id="legend-debts" class="font-bold text-slate-800 dark:text-slate-100">₺0 (%0)</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                        <span class="font-medium text-slate-600 dark:text-slate-300">Cebe Kalan Net Para</span>
+                    </div>
+                    <span id="legend-remaining" class="font-bold text-slate-800 dark:text-slate-100">₺0 (%0)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DETAYLI BORÇ TAKİBİ VE "BİTMESİNE KAÇ KALDI" HESAPLAYICI -->
+        <section class="space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-hourglass-half text-amber-500"></i>
+                        Borçlarım & "Bitmesine Kaç Ay Kaldı?" Takibi
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                        Kredi Kartı, Ek Hesap (KMH) ve Kredi borçlarınızı ekleyin; her ay taksit ödedikçe kalan süreyi canlı takip edin.
+                    </p>
+                </div>
+
+                <!-- Borç Türü Filtreleri -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 self-start">
+                    <button onclick="setDebtFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white">
+                        Tümü
+                    </button>
+                    <button onclick="setDebtFilter('credit_card')" id="filter-credit_card" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-regular fa-credit-card mr-1"></i>Kredi Kartı
+                    </button>
+                    <button onclick="setDebtFilter('overdraft')" id="filter-overdraft" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-building-columns mr-1"></i>Ek Hesap (KMH)
+                    </button>
+                    <button onclick="setDebtFilter('loan')" id="filter-loan" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-file-invoice-dollar mr-1"></i>Krediler
+                    </button>
+                </div>
+            </div>
+
+            <!-- Borç Ekleme Formu ve Borç Kartları Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Sol: Yeni Borç Ekleme Formu (4 Kolon) -->
+                <div class="lg:col-span-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h3 class="font-bold text-base mb-4 flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </span>
+                        Yeni Borç / Kredi Ekle
+                    </h3>
+
+                    <form id="debt-form" onsubmit="handleAddDebt(event)" class="space-y-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Borç / Banka Adı *</label>
+                            <input type="text" id="debt-name" required placeholder="Örn: Garanti Bonus, İş Bankası Ek Hesap" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Borç Türü *</label>
+                                <select id="debt-type" class="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="credit_card">💳 Kredi Kartı</option>
+                                    <option value="overdraft">🏦 Ek Hesap (KMH)</option>
+                                    <option value="loan">📄 Kredi (İhtiyaç/Konut)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Ödeme Günü (Ayın)</label>
+                                <input type="number" id="debt-due-day" min="1" max="31" value="15" placeholder="1-31" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Toplam Başlangıç Borcu (₺)</label>
+                                <input type="number" id="debt-initial" min="1" step="0.01" placeholder="Opsiyonel (Örn: 100000)" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Güncel Kalan Borç (₺) *</label>
+                                <input type="number" id="debt-remaining" required min="1" step="0.01" oninput="previewDebtCalculation()" placeholder="Örn: 60000" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Aylık Ödeme / Taksit (₺) *</label>
+                                <input type="number" id="debt-monthly" required min="1" step="0.01" oninput="previewDebtCalculation()" placeholder="Örn: 10000" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1" title="Kredi taksitleriniz sabitse %0 bırakın. Kredi kartı veya KMH'da kalan bakiyeye aylık faiz işliyorsa girebilirsiniz.">Aylık Faiz Oranı (%)</label>
+                                <input type="number" id="debt-interest" min="0" max="20" step="0.01" value="0" oninput="previewDebtCalculation()" placeholder="0" class="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- Canlı Önizleme Kutusu -->
+                        <div id="debt-live-preview" class="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 text-xs space-y-1 hidden">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Tahmini Kalan Süre:</span>
+                                <span id="preview-months" class="font-bold text-indigo-600 dark:text-indigo-400">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500 dark:text-slate-400">Tahmini Bitiş Tarihi:</span>
+                                <span id="preview-end-date" class="font-semibold text-slate-700 dark:text-slate-200">-</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            Borcu Takibe Ekle
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Sağ: Borç Kartları Listesi (8 Kolon) -->
+                <div class="lg:col-span-8">
+                    <!-- Borç Türü Özet Mini Bar -->
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-medium">Kredi Kartları</p>
+                                <p id="sum-cc" class="text-sm sm:text-base font-bold text-rose-600 dark:text-rose-400">₺0</p>
+                            </div>
+                            <i class="fa-regular fa-credit-card text-rose-400 text-lg hidden sm:block"></i>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-medium">Ek Hesap (KMH)</p>
+                                <p id="sum-kmh" class="text-sm sm:text-base font-bold text-amber-600 dark:text-amber-400">₺0</p>
+                            </div>
+                            <i class="fa-solid fa-building-columns text-amber-400 text-lg hidden sm:block"></i>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-medium">Krediler</p>
+                                <p id="sum-loan" class="text-sm sm:text-base font-bold text-indigo-600 dark:text-indigo-400">₺0</p>
+                            </div>
+                            <i class="fa-solid fa-file-invoice-dollar text-indigo-400 text-lg hidden sm:block"></i>
+                        </div>
+                    </div>
+
+                    <!-- Kartların Dizildiği Grid -->
+                    <div id="debts-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. MAAŞ / GELİR YÖNETİMİ VE GİDER TAKİBİ (2 SÜTUN) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+            
+            <!-- SOL: MAAŞ VE EK GELİR YÖNETİMİ -->
+            <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <i class="fa-solid fa-sack-dollar"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base sm:text-lg">Maaş ve Gelir Yönetimi</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Ana maaşınız ve aylık ek gelir kalemleriniz</p>
+                            </div>
+                        </div>
+                        <span id="section-income-total" class="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₺0</span>
+                    </div>
+
+                    <!-- Hızlı Ana Maaş Güncelleme Kutusu -->
+                    <div class="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/60 mb-5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-2">
+                            <i class="fa-solid fa-briefcase mr-1"></i> Aylık Net Maaşınız (₺)
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="number" id="salary-input" min="0" step="100" placeholder="Maaş tutarınızı girin" class="flex-1 px-3.5 py-2 text-base font-bold rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <button onclick="updateSalary()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-check"></i>
+                                Güncelle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ek Gelir Ekleme Formu -->
+                    <form onsubmit="handleAddIncome(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mb-4">
+                        <input type="text" id="income-title" required placeholder="Ek Gelir Adı (Prim, Kira, Freelance...)" class="sm:col-span-5 px-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <select id="income-category" class="sm:col-span-3 px-2.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Ek İş / Freelance">💻 Freelance</option>
+                            <option value="Prim / İkramiye">🎁 Prim/İkramiye</option>
+                            <option value="Kira Geliri">🏠 Kira Geliri</option>
+                            <option value="Yatırım / Temettü">📈 Yatırım</option>
+                            <option value="Diğer Gelir">✨ Diğer</option>
+                        </select>
+                        <input type="number" id="income-amount" required min="1" step="0.01" placeholder="Tutar (₺)" class="sm:col-span-2 px-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button type="submit" class="sm:col-span-2 py-2 px-3 bg-slate-800 hover:bg-slate-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Ekle
+                        </button>
+                    </form>
+
+                    <!-- Ek Gelirler Listesi -->
+                    <div id="incomes-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ: AYLIK RUTİN GİDER TAKİBİ -->
+            <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base sm:text-lg">Aylık Rutin Giderler</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Kira, fatura, mutfak, ulaşım gibi sabit giderleriniz</p>
+                            </div>
+                        </div>
+                        <span id="section-expense-total" class="text-base sm:text-lg font-extrabold text-rose-600 dark:text-rose-400">₺0</span>
+                    </div>
+
+                    <!-- Gider Ekleme Formu -->
+                    <form onsubmit="handleAddExpense(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mb-4">
+                        <input type="text" id="expense-title" required placeholder="Gider Adı (Ev Kirası, Market, Elektrik...)" class="sm:col-span-5 px-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <select id="expense-category" class="sm:col-span-3 px-2.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            <option value="Kira / Aidat">🏠 Kira / Aidat</option>
+                            <option value="Faturalar">⚡ Faturalar</option>
+                            <option value="Mutfak / Market">🛒 Market / Mutfak</option>
+                            <option value="Ulaşım / Yakıt">🚗 Ulaşım / Yakıt</option>
+                            <option value="Abonelikler">📺 Abonelik</option>
+                            <option value="Eğitim / Sağlık">🩺 Eğitim / Sağlık</option>
+                            <option value="Diğer">📦 Diğer</option>
+                        </select>
+                        <input type="number" id="expense-amount" required min="1" step="0.01" placeholder="Tutar (₺)" class="sm:col-span-2 px-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <button type="submit" class="sm:col-span-2 py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Ekle
+                        </button>
+                    </form>
+
+                    <!-- Kategori Bazlı Mini Özet Çipleri -->
+                    <div id="expense-category-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+                    <!-- Giderler Listesi -->
+                    <div id="expenses-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Alt Bilgi (Footer) -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-5 mt-8 bg-white/50 dark:bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
+            <p>FinansPro — Kişisel Para Programlama, Maaş ve Borç Bitiş Takip Sistemi</p>
+            <p class="flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                Verileriniz yalnızca tarayıcınızda (<code class="font-mono">localStorage</code>) güvenle saklanır.
+            </p>
+        </div>
+    </footer>
+
+    <!-- UYGULAMA JAVASCRIPT KODLARI -->
+    <script>
+        const STORAGE_KEY = 'finanspro_data_v1';
+        const THEME_KEY = 'finanspro_theme';
+
+        let currentDebtFilter = 'all';
+
+        // Türkçe Aylar
+        const MONTHS_TR = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+
+        // Varsayılan Örnek (Demo) Veriler
+        const DEFAULT_STATE = {
+            salary: 58000,
+            incomes: [
+                { id: 'inc_1', title: 'Freelance Web Tasarım / Danışmanlık', category: 'Ek İş / Freelance', amount: 8500 },
+                { id: 'inc_2', title: 'Yemek & Yol Yan Hakkı', category: 'Prim / İkramiye', amount: 4500 }
+            ],
+            expenses: [
+                { id: 'exp_1', title: 'Ev Kirası ve Site Aidatı', category: 'Kira / Aidat', amount: 17500 },
+                { id: 'exp_2', title: 'Aylık Mutfak & Market Alışverişi', category: 'Mutfak / Market', amount: 9500 },
+                { id: 'exp_3', title: 'Elektrik, Su, Doğalgaz, İnternet', category: 'Faturalar', amount: 3400 },
+                { id: 'exp_4', title: 'Ulaşım / Akaryakıt', category: 'Ulaşım / Yakıt', amount: 2800 },
+                { id: 'exp_5', title: 'Dijital Platformlar & Spor Salonu', category: 'Abonelikler', amount: 1200 }
+            ],
+            debts: [
+                {
+                    id: 'debt_1',
+                    name: 'Garanti BBVA Bonus Kredi Kartı',
+                    type: 'credit_card',
+                    initialAmount: 60000,
+                    remainingAmount: 36000,
+                    monthlyPayment: 9000,
+                    interestRate: 0,
+                    dueDay: 12
+                },
+                {
+                    id: 'debt_2',
+                    name: 'İş Bankası Ek Hesap (KMH)',
+                    type: 'overdraft',
+                    initialAmount: 30000,
+                    remainingAmount: 18000,
+                    monthlyPayment: 4500,
+                    interestRate: 4.25,
+                    dueDay: 1
+                },
+                {
+                    id: 'debt_3',
+                    name: 'Ziraat Bankası İhtiyaç Kredisi',
+                    type: 'loan',
+                    initialAmount: 150000,
+                    remainingAmount: 96000,
+                    monthlyPayment: 12000,
+                    interestRate: 0,
+                    dueDay: 18
+                }
+            ]
+        };
+
+        let appState = loadState();
+
+        // Veriyi localStorage'dan Yükle
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_STATE));
+                    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+                }
+                return JSON.parse(raw);
+            } catch (e) {
+                console.error('Veri okuma hatası:', e);
+                return JSON.parse(JSON.stringify(DEFAULT_STATE));
+            }
+        }
+
+        // Veriyi Kaydet ve Arayüzü Yenile
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                renderAll();
+            } catch (e) {
+                console.error('Veri kaydetme hatası:', e);
+            }
+        }
+
+        // Türk Lirası Formatlayıcı
+        function formatTL(amount) {
+            const num = Number(amount) || 0;
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: 'TRY',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+
+        // Borç Bitiş Süresi (Ay) ve Tahmini Bitiş Tarihi Hesaplayıcı
+        function calculatePayoffDetails(remainingAmount, monthlyPayment, monthlyInterestRate = 0) {
+            const rem = Number(remainingAmount) || 0;
+            const pay = Number(monthlyPayment) || 0;
+            const rate = (Number(monthlyInterestRate) || 0) / 100;
+
+            if (rem <= 0) {
+                return {
+                    months: 0,
+                    infinite: false,
+                    formattedDuration: 'Borç Bitti 🎉',
+                    estimatedDateText: 'Tamamlandı',
+                    totalInterestPaid: 0
+                };
+            }
+
+            if (pay <= 0) {
+                return {
+                    months: Infinity,
+                    infinite: true,
+                    formattedDuration: 'Ödeme Yok',
+                    estimatedDateText: 'Belirsiz',
+                    totalInterestPaid: 0
+                };
+            }
+
+            let months = 0;
+            let totalInterestPaid = 0;
+
+            if (rate <= 0) {
+                // Faizsiz veya faizi zaten taksite dahil edilmiş sabit kredi/taksit
+                months = Math.ceil(rem / pay);
+            } else {
+                // Aylık faiz işleyen bakiye (Örn: KMH veya asgari/sabit ödenen Kredi Kartı)
+                const firstMonthInterest = rem * rate;
+                if (pay <= firstMonthInterest) {
+                    return {
+                        months: Infinity,
+                        infinite: true,
+                        formattedDuration: 'Taksit Faizi Karşılamıyor!',
+                        estimatedDateText: 'Aylık ödemeyi artırın',
+                        totalInterestPaid: Infinity
+                    };
+                }
+                //Simülasyon ile ay ve toplam faiz hesabı
+                let balance = rem;
+                while (balance > 0.5 && months < 600) {
+                    const interest = balance * rate;
+                    totalInterestPaid += interest;
+                    balance = balance + interest - pay;
+                    months++;
+                }
+            }
+
+            // Tahmini Bitiş Ayı ve Yılı
+            const now = new Date();
+            const targetDate = new Date(now.getFullYear(), now.getMonth() + months, 1);
+            const monthName = MONTHS_TR[targetDate.getMonth()];
+            const year = targetDate.getFullYear();
+
+            // Süre metni (Örn: "8 Ay Kaldı" veya "1 Yıl 4 Ay Kaldı")
+            let durationText = `${months} Ay Kaldı`;
+            if (months >= 12) {
+                const y = Math.floor(months / 12);
+                const m = months % 12;
+                durationText = m > 0 ? `${months} Ay (${y} Yıl ${m} Ay)` : `${months} Ay (${y} Yıl)`;
+            }
+
+            return {
+                months,
+                infinite: false,
+                formattedDuration: durationText,
+                estimatedDateText: `${monthName} ${year}`,
+                totalInterestPaid: Math.round(totalInterestPaid)
+            };
+        }
+
+        // Tüm Ekranı Render Et
+        function renderAll() {
+            renderKPIsAndChart();
+            renderDebts();
+            renderIncomes();
+            renderExpenses();
+        }
+
+        // 1. Üst Özet Paneli ve Dağılım Çubuğunu Güncelle
+        function renderKPIsAndChart() {
+            const salary = Number(appState.salary) || 0;
+            const extraIncome = appState.incomes.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
+            const totalIncome = salary + extraIncome;
+
+            const routineExpenses = appState.expenses.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
+            const activeDebts = appState.debts.filter(d => d.remainingAmount > 0);
+            const monthlyDebtPayments = activeDebts.reduce((acc, item) => acc + (Number(item.monthlyPayment) || 0), 0);
+
+            const totalOutflow = routineExpenses + monthlyDebtPayments;
+            const netCash = totalIncome - totalOutflow;
+            const savingsRate = totalIncome > 0 ? Math.round((netCash / totalIncome) * 100) : 0;
+
+            const totalDebtLoad = appState.debts.reduce((acc, item) => acc + (Number(item.remainingAmount) || 0), 0);
+
+            // En uzun vadeli borcu bul
+            let maxMonths = 0;
+            let hasInfiniteDebt = false;
+            let longestDebtInfo = null;
+
+            activeDebts.forEach(d => {
+                const info = calculatePayoffDetails(d.remainingAmount, d.monthlyPayment, d.interestRate);
+                if (info.infinite) {
+                    hasInfiniteDebt = true;
+                } else if (info.months > maxMonths) {
+                    maxMonths = info.months;
+                    longestDebtInfo = info;
+                }
+            });
+
+            // KPI Kartlarını Yazdır
+            document.getElementById('kpi-total-income').textContent = formatTL(totalIncome);
+            document.getElementById('kpi-income-sub').textContent = `Maaş: ${formatTL(salary)} | Ek: ${formatTL(extraIncome)}`;
+
+            document.getElementById('kpi-total-outflow').textContent = formatTL(totalOutflow);
+            document.getElementById('kpi-outflow-sub').textContent = `Gider: ${formatTL(routineExpenses)} | Taksit: ${formatTL(monthlyDebtPayments)}`;
+
+            const netCashEl = document.getElementById('kpi-net-cash');
+            netCashEl.textContent = formatTL(netCash);
+            netCashEl.className = `text-2xl font-extrabold mt-1 ${netCash >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-600 dark:text-rose-400'}`;
+
+            const savingsEl = document.getElementById('kpi-savings-rate');
+            savingsEl.textContent = `%${savingsRate}`;
+            savingsEl.className = `font-bold px-2 py-0.5 rounded-md ${netCash >= 0 ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'}`;
+
+            document.getElementById('kpi-total-debt').textContent = formatTL(totalDebtLoad);
+            document.getElementById('kpi-debt-sub').textContent = `${activeDebts.length} Aktif Borç Kalemi`;
+
+            // En Uzun Borç Sayacı
+            const countdownEl = document.getElementById('kpi-debt-free-countdown');
+            const dateEl = document.getElementById('kpi-debt-free-date');
+
+            if (activeDebts.length === 0) {
+                countdownEl.textContent = 'Borç Yok 🎉';
+                dateEl.innerHTML = `<i class="fa-solid fa-check-double"></i> <span>Tüm borçlar sıfırlandı!</span>`;
+            } else if (hasInfiniteDebt) {
+                countdownEl.textContent = 'Kritik Faiz!';
+                dateEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>Taksiti faizden düşük borç var</span>`;
+            } else if (longestDebtInfo) {
+                countdownEl.textContent = `${maxMonths} Ay Kaldı`;
+                dateEl.innerHTML = `<i class="fa-regular fa-calendar-check"></i> <span>Bitiş: ${longestDebtInfo.estimatedDateText}</span>`;
+            }
+
+            // Dağılım Barı Oranlarını Hesapla
+            const base = Math.max(totalIncome, totalOutflow, 1);
+            const expPct = Math.min(100, Math.round((routineExpenses / base) * 100));
+            const debtPct = Math.min(100 - expPct, Math.round((monthlyDebtPayments / base) * 100));
+            const remPct = netCash > 0 ? Math.max(0, 100 - expPct - debtPct) : 0;
+
+            document.getElementById('bar-expenses').style.width = `${expPct}%`;
+            document.getElementById('bar-debts').style.width = `${debtPct}%`;
+            document.getElementById('bar-remaining').style.width = `${remPct}%`;
+
+            document.getElementById('legend-expenses').textContent = `${formatTL(routineExpenses)} (%${expPct})`;
+            document.getElementById('legend-debts').textContent = `${formatTL(monthlyDebtPayments)} (%${debtPct})`;
+            document.getElementById('legend-remaining').textContent = `${formatTL(netCash)} (%${savingsRate})`;
+
+            // Finansal Sağlık Rozeti
+            const badge = document.getElementById('financial-health-badge');
+            if (netCash < 0) {
+                badge.textContent = '⚠️ Aylık Açık Veriyorsunuz (' + formatTL(netCash) + ')';
+                badge.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800';
+            } else if (debtPct > 45) {
+                badge.textContent = '⚡ Yüksek Borç Taksit Yükü (%' + debtPct + ')';
+                badge.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800';
+            } else {
+                badge.textContent = '✅ Nakit Akışı Pozitif ve Dengeli';
+                badge.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+            }
+        }
+
+        // Borç Türü Etiket ve Renk Yardımcıları
+        function getDebtTypeBadge(type) {
+            switch (type) {
+                case 'credit_card':
+                    return {
+                        label: 'Kredi Kartı',
+                        icon: 'fa-regular fa-credit-card',
+                        classes: 'bg-rose-50 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                    };
+                case 'overdraft':
+                    return {
+                        label: 'Ek Hesap (KMH)',
+                        icon: 'fa-solid fa-building-columns',
+                        classes: 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                    };
+                default:
+                    return {
+                        label: 'Kredi Borcu',
+                        icon: 'fa-solid fa-file-invoice-dollar',
+                        classes: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                    };
+            }
+        }
+
+        // 2. Borç Kartlarını Render Et
+        function renderDebts() {
+            // Tür bazlı alt toplamlar
+            const ccSum = appState.debts.filter(d => d.type === 'credit_card').reduce((a, b) => a + Number(b.remainingAmount), 0);
+            const kmhSum = appState.debts.filter(d => d.type === 'overdraft').reduce((a, b) => a + Number(b.remainingAmount), 0);
+            const loanSum = appState.debts.filter(d => d.type === 'loan').reduce((a, b) => a + Number(b.remainingAmount), 0);
+
+            document.getElementById('sum-cc').textContent = formatTL(ccSum);
+            document.getElementById('sum-kmh').textContent = formatTL(kmhSum);
+            document.getElementById('sum-loan').textContent = formatTL(loanSum);
+
+            const container = document.getElementById('debts-container');
+            const filtered = currentDebtFilter === 'all'
+                ? appState.debts
+                : appState.debts.filter(d => d.type === currentDebtFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white dark:bg-slate-900 p-8 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                            <i class="fa-solid fa-check-circle text-xl"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-200">Bu kategoride borç bulunmuyor</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Sol taraftaki formu kullanarak kredi kartı, ek hesap veya kredi borcu ekleyebilirsiniz.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(debt => {
+                const badge = getDebtTypeBadge(debt.type);
+                const initial = Math.max(Number(debt.initialAmount) || Number(debt.remainingAmount), Number(debt.remainingAmount));
+                const remaining = Math.max(0, Number(debt.remainingAmount) || 0);
+                const paid = Math.max(0, initial - remaining);
+                const progressPct = initial > 0 ? Math.min(100, Math.round((paid / initial) * 100)) : 0;
+
+                const payoff = calculatePayoffDetails(remaining, debt.monthlyPayment, debt.interestRate);
+                const isPaidOff = remaining <= 0;
+
+                return `
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border ${isPaidOff ? 'border-emerald-300 dark:border-emerald-800/80 opacity-85' : 'border-slate-200 dark:border-slate-800'} p-5 shadow-sm flex flex-col justify-between transition hover:shadow-md">
+                        <div>
+                            <!-- Üst Başlık ve Rozet -->
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <div>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${badge.classes}">
+                                        <i class="${badge.icon}"></i> ${badge.label}
+                                    </span>
+                                    <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 mt-1.5 leading-snug">${escapeHTML(debt.name)}</h4>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="openEditDebtModal('${debt.id}')" class="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center" title="Borcu Düzenle">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </button>
+                                    <button onclick="deleteDebt('${debt.id}')" class="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition flex items-center justify-center" title="Borcu Sil">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Kalan Borç ve Aylık Taksit Kutuları -->
+                            <div class="grid grid-cols-2 gap-2.5 my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+                                <div>
+                                    <span class="text-[11px] text-slate-400 block">Kalan Toplam Borç</span>
+                                    <span class="text-lg font-extrabold ${isPaidOff ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-white'}">${formatTL(remaining)}</span>
+                                </div>
+                                <div class="border-l border-slate-200 dark:border-slate-700 pl-3">
+                                    <span class="text-[11px] text-slate-400 block">Aylık Ödeme / Taksit</span>
+                                    <span class="text-lg font-bold text-amber-600 dark:text-amber-400">${formatTL(debt.monthlyPayment)}</span>
+                                </div>
+                            </div>
+
+                            <!-- "Bitmesine Kaç Ay Kaldı?" Vurgu Alanı -->
+                            <div class="p-3 rounded-xl ${isPaidOff ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900' : payoff.infinite ? 'bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900' : 'bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60'} mb-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                        <i class="fa-regular fa-clock text-indigo-500"></i>
+                                        Bitmesine Kalan:
+                                    </span>
+                                    <span class="text-xs sm:text-sm font-extrabold ${isPaidOff ? 'text-emerald-600 dark:text-emerald-400' : payoff.infinite ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'}">
+                                        ${payoff.formattedDuration}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                    <span>Tahmini Bitiş: <strong>${payoff.estimatedDateText}</strong></span>
+                                    <span>Ödeme Günü: <strong>Ayın ${debt.dueDay || 15}'i</strong></span>
+                                </div>
+                                ${debt.interestRate > 0 && !isPaidOff ? `
+                                    <div class="mt-1.5 pt-1.5 border-t border-indigo-200/60 dark:border-indigo-800/50 flex justify-between text-[11px] text-amber-700 dark:text-amber-300">
+                                        <span>Aylık Akdi Faiz: %${debt.interestRate}</span>
+                                        <span>Tahmini Faiz Yükü: ${payoff.infinite ? 'Belirsiz' : formatTL(payoff.totalInterestPaid)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- İlerleme Çubuğu (Progress Bar) -->
+                            <div class="space-y-1 mb-4">
+                                <div class="flex justify-between text-[11px] font-medium">
+                                    <span class="text-slate-500 dark:text-slate-400">Ödenen: ${formatTL(paid)} / ${formatTL(initial)}</span>
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">%${progressPct} Tamamlandı</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aksiyon Butonları: Taksit Öde & Özel Tutar Düş -->
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            ${!isPaidOff ? `
+                                <button onclick="payInstallment('${debt.id}')" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-500/10">
+                                    <i class="fa-solid fa-check"></i>
+                                    1 Taksit Öde (${formatTL(Math.min(remaining, debt.monthlyPayment))})
+                                </button>
+                                <button onclick="openCustomPaymentModal('${debt.id}')" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs transition" title="Farklı bir tutar öde veya borçtan düş">
+                                    Ara Ödeme
+                                </button>
+                            ` : `
+                                <div class="w-full py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold text-xs text-center flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-trophy"></i> Bu Borç Tamamen Kapatıldı!
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Canlı Borç Formu Önizlemesi
+        function previewDebtCalculation() {
+            const rem = parseFloat(document.getElementById('debt-remaining').value);
+            const pay = parseFloat(document.getElementById('debt-monthly').value);
+            const rate = parseFloat(document.getElementById('debt-interest').value) || 0;
+            const previewBox = document.getElementById('debt-live-preview');
+
+            if (rem > 0 && pay > 0) {
+                const info = calculatePayoffDetails(rem, pay, rate);
+                previewBox.classList.remove('hidden');
+                document.getElementById('preview-months').textContent = info.formattedDuration;
+                document.getElementById('preview-end-date').textContent = info.estimatedDateText;
+            } else {
+                previewBox.classList.add('hidden');
+            }
+        }
+
+        // Yeni Borç Ekle
+        function handleAddDebt(e) {
+            e.preventDefault();
+            const name = document.getElementById('debt-name').value.trim();
+            const type = document.getElementById('debt-type').value;
+            const dueDay = parseInt(document.getElementById('debt-due-day').value) || 15;
+            const remaining = parseFloat(document.getElementById('debt-remaining').value);
+            const initialInput = parseFloat(document.getElementById('debt-initial').value);
+            const monthly = parseFloat(document.getElementById('debt-monthly').value);
+            const interest = parseFloat(document.getElementById('debt-interest').value) || 0;
+
+            if (!name || isNaN(remaining) || isNaN(monthly) || remaining <= 0 || monthly <= 0) {
+                showToast('Lütfen borç adı, kalan borç ve aylık ödeme alanlarını eksiksiz doldurun.', 'error');
+                return;
+            }
+
+            const initialAmount = (!isNaN(initialInput) && initialInput >= remaining) ? initialInput : remaining;
+
+            appState.debts.unshift({
+                id: 'debt_' + Date.now(),
+                name,
+                type,
+                initialAmount,
+                remainingAmount: remaining,
+                monthlyPayment: monthly,
+                interestRate: interest,
+                dueDay: Math.min(31, Math.max(1, dueDay))
+            });
+
+            saveState();
+            e.target.reset();
+            document.getElementById('debt-due-day').value = 15;
+            document.getElementById('debt-interest').value = 0;
+            document.getElementById('debt-live-preview').classList.add('hidden');
+            showToast(`"${name}" borcu takibe eklendi.`, 'success');
+        }
+
+        // Taksit Öde / Borçtan Düş
+        function payInstallment(debtId) {
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt || debt.remainingAmount <= 0) return;
+
+            const rate = (Number(debt.interestRate) || 0) / 100;
+            let interestAdded = 0;
+            if (rate > 0) {
+                interestAdded = Math.round(debt.remainingAmount * rate);
+            }
+
+            const payment = Number(debt.monthlyPayment) || 0;
+            const newRemaining = Math.max(0, debt.remainingAmount + interestAdded - payment);
+
+            debt.remainingAmount = newRemaining;
+            saveState();
+
+            if (newRemaining === 0) {
+                showToast(`Tebrikler! "${debt.name}" borcunuz tamamen bitti! 🎉`, 'success');
+            } else {
+                const info = calculatePayoffDetails(debt.remainingAmount, debt.monthlyPayment, debt.interestRate);
+                showToast(`${formatTL(payment)} taksit düşüldü. Bitmesine ${info.formattedDuration.toLowerCase()}!`, 'success');
+            }
+        }
+
+        // Özel Ara Ödeme Modalı
+        function openCustomPaymentModal(debtId) {
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="font-bold text-lg">Ara Ödeme / Borçtan Tutar Düş</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <strong>${escapeHTML(debt.name)}</strong> için güncel kalan borç: <strong class="text-slate-800 dark:text-white">${formatTL(debt.remainingAmount)}</strong>
+                    </p>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Ödenen / Düşülecek Tutar (₺)</label>
+                        <input type="number" id="custom-pay-amount" value="${debt.monthlyPayment}" min="1" max="${debt.remainingAmount}" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">İptal</button>
+                        <button onclick="confirmCustomPayment('${debt.id}')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Borçtan Düş</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function confirmCustomPayment(debtId) {
+            const amount = parseFloat(document.getElementById('custom-pay-amount').value);
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt || isNaN(amount) || amount <= 0) return;
+
+            debt.remainingAmount = Math.max(0, debt.remainingAmount - amount);
+            saveState();
+            closeModal();
+            showToast(`${formatTL(amount)} tutarında ödeme "${debt.name}" borcundan düşüldü.`, 'success');
+        }
+
+        // Borç Düzenleme Modalı
+        function openEditDebtModal(debtId) {
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            openModal(`
+                <form onsubmit="saveEditedDebt(event, '${debt.id}')" class="space-y-3.5">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="font-bold text-lg">Borç Bilgilerini Düzenle</h3>
+                        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Borç / Banka Adı</label>
+                        <input type="text" id="edit-debt-name" required value="${escapeHTML(debt.name)}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Borç Türü</label>
+                            <select id="edit-debt-type" class="w-full px-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                <option value="credit_card" ${debt.type === 'credit_card' ? 'selected' : ''}>💳 Kredi Kartı</option>
+                                <option value="overdraft" ${debt.type === 'overdraft' ? 'selected' : ''}>🏦 Ek Hesap (KMH)</option>
+                                <option value="loan" ${debt.type === 'loan' ? 'selected' : ''}>📄 Kredi Borcu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Ödeme Günü</label>
+                            <input type="number" id="edit-debt-day" min="1" max="31" value="${debt.dueDay || 15}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Toplam Başlangıç Borcu (₺)</label>
+                            <input type="number" id="edit-debt-initial" min="1" step="0.01" required value="${debt.initialAmount}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Güncel Kalan Borç (₺)</label>
+                            <input type="number" id="edit-debt-remaining" min="0" step="0.01" required value="${debt.remainingAmount}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Aylık Ödeme / Taksit (₺)</label>
+                            <input type="number" id="edit-debt-monthly" min="1" step="0.01" required value="${debt.monthlyPayment}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Aylık Faiz Oranı (%)</label>
+                            <input type="number" id="edit-debt-interest" min="0" max="25" step="0.01" value="${debt.interestRate || 0}" class="w-full px-3.5 py-2 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">Vazgeç</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            `);
+        }
+
+        function saveEditedDebt(e, debtId) {
+            e.preventDefault();
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            debt.name = document.getElementById('edit-debt-name').value.trim();
+            debt.type = document.getElementById('edit-debt-type').value;
+            debt.dueDay = parseInt(document.getElementById('edit-debt-day').value) || 15;
+            debt.initialAmount = parseFloat(document.getElementById('edit-debt-initial').value) || 0;
+            debt.remainingAmount = parseFloat(document.getElementById('edit-debt-remaining').value) || 0;
+            debt.monthlyPayment = parseFloat(document.getElementById('edit-debt-monthly').value) || 0;
+            debt.interestRate = parseFloat(document.getElementById('edit-debt-interest').value) || 0;
+
+            if (debt.initialAmount < debt.remainingAmount) {
+                debt.initialAmount = debt.remainingAmount;
+            }
+
+            saveState();
+            closeModal();
+            showToast('Borç bilgileri güncellendi.', 'success');
+        }
+
+        // Borç Sil
+        function deleteDebt(debtId) {
+            const debt = appState.debts.find(d => d.id === debtId);
+            if (!debt) return;
+            appState.debts = appState.debts.filter(d => d.id !== debtId);
+            saveState();
+            showToast(`"${debt.name}" borç listesinden silindi.`, 'info');
+        }
+
+        // Borç Filtresi Değiştir
+        function setDebtFilter(filter) {
+            currentDebtFilter = filter;
+            ['all', 'credit_card', 'overdraft', 'loan'].forEach(f => {
+                const btn = document.getElementById('filter-' + f);
+                if (f === filter) {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800';
+                }
+            });
+            renderDebts();
+        }
+
+        // 3. Maaş ve Ek Gelir Yönetimi
+        function renderIncomes() {
+            const salaryInput = document.getElementById('salary-input');
+            if (document.activeElement !== salaryInput) {
+                salaryInput.value = appState.salary || 0;
+            }
+
+            const extraTotal = appState.incomes.reduce((a, b) => a + (Number(b.amount) || 0), 0);
+            const total = (Number(appState.salary) || 0) + extraTotal;
+            document.getElementById('section-income-total').textContent = formatTL(total);
+
+            const listEl = document.getElementById('incomes-list');
+            if (appState.incomes.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Henüz ek gelir kalemi eklenmedi.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = appState.incomes.map(item => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">${escapeHTML(item.title)}</p>
+                        <span class="text-[11px] text-slate-400">${escapeHTML(item.category)}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">+${formatTL(item.amount)}</span>
+                        <button onclick="deleteIncome('${item.id}')" class="text-slate-400 hover:text-rose-500 transition" title="Sil">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSalary() {
+            const val = parseFloat(document.getElementById('salary-input').value);
+            if (isNaN(val) || val < 0) {
+                showToast('Geçerli bir maaş tutarı girin.', 'error');
+                return;
+            }
+            appState.salary = val;
+            saveState();
+            showToast(`Aylık net maaşınız ${formatTL(val)} olarak güncellendi.`, 'success');
+        }
+
+        function handleAddIncome(e) {
+            e.preventDefault();
+            const title = document.getElementById('income-title').value.trim();
+            const category = document.getElementById('income-category').value;
+            const amount = parseFloat(document.getElementById('income-amount').value);
+
+            if (!title || isNaN(amount) || amount <= 0) return;
+
+            appState.incomes.push({
+                id: 'inc_' + Date.now(),
+                title,
+                category,
+                amount
+            });
+
+            saveState();
+            e.target.reset();
+            showToast(`"${title}" ek gelir olarak eklendi.`, 'success');
+        }
+
+        function deleteIncome(id) {
+            appState.incomes = appState.incomes.filter(i => i.id !== id);
+            saveState();
+            showToast('Ek gelir kalemi silindi.', 'info');
+        }
+
+        // 4. Rutin Gider Takibi
+        function renderExpenses() {
+            const total = appState.expenses.reduce((a, b) => a + (Number(b.amount) || 0), 0);
+            document.getElementById('section-expense-total').textContent = formatTL(total);
+
+            // Kategori özet çipleri
+            const catTotals = {};
+            appState.expenses.forEach(e => {
+                catTotals[e.category] = (catTotals[e.category] || 0) + Number(e.amount);
+            });
+
+            const chipsEl = document.getElementById('expense-category-chips');
+            chipsEl.innerHTML = Object.entries(catTotals).map(([cat, sum]) => `
+                <span class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium">
+                    ${escapeHTML(cat)}: <strong>${formatTL(sum)}</strong>
+                </span>
+            `).join('');
+
+            const listEl = document.getElementById('expenses-list');
+            if (appState.expenses.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Henüz rutin gider eklenmedi.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = appState.expenses.map(item => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">${escapeHTML(item.title)}</p>
+                        <span class="text-[11px] text-slate-400">${escapeHTML(item.category)}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-bold text-rose-600 dark:text-rose-400">-${formatTL(item.amount)}</span>
+                        <button onclick="deleteExpense('${item.id}')" class="text-slate-400 hover:text-rose-500 transition" title="Sil">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAddExpense(e) {
+            e.preventDefault();
+            const title = document.getElementById('expense-title').value.trim();
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+
+            if (!title || isNaN(amount) || amount <= 0) return;
+
+            appState.expenses.push({
+                id: 'exp_' + Date.now(),
+                title,
+                category,
+                amount
+            });
+
+            saveState();
+            e.target.reset();
+            showToast(`"${title}" gider listesine eklendi.`, 'success');
+        }
+
+        function deleteExpense(id) {
+            appState.expenses = appState.expenses.filter(e => e.id !== id);
+            saveState();
+            showToast('Gider kalemi silindi.', 'info');
+        }
+
+        // Erken Kapama / Ekstra Ödeme Simülatörü Modalı
+        function openSimulationModal() {
+            const activeDebts = appState.debts.filter(d => d.remainingAmount > 0);
+            const totalRemaining = activeDebts.reduce((a, b) => a + Number(b.remainingAmount), 0);
+            const currentMonthly = activeDebts.reduce((a, b) => a + Number(b.monthlyPayment), 0);
+
+            const currentMonths = currentMonthly > 0 ? Math.ceil(totalRemaining / currentMonthly) : 0;
+
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-500"></i>
+                            Erken Borç Kapama Simülatörü
+                        </h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Cebinize kalan net paradan her ay borçlarınıza ekstra ödeme ayırırsanız tüm borçlarınızın ne kadar erken biteceğini görün.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 text-xs">
+                        <div>
+                            <span class="text-slate-400 block">Toplam Kalan Borç:</span>
+                            <strong class="text-base text-slate-800 dark:text-white">${formatTL(totalRemaining)}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block">Mevcut Aylık Taksit Toplamı:</span>
+                            <strong class="text-base text-amber-500">${formatTL(currentMonthly)}</strong>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Aylık Ekstra Borç Ödeme Tutarı (₺)</label>
+                        <input type="range" id="sim-extra-slider" min="0" max="30000" step="500" value="3000" oninput="updateSimulationView(${totalRemaining}, ${currentMonthly}, ${currentMonths})" class="w-full accent-indigo-600">
+                        <div class="flex justify-between text-xs mt-1">
+                            <span class="text-slate-400">₺0</span>
+                            <span id="sim-extra-label" class="font-bold text-indigo-600 dark:text-indigo-400">+₺3.000 / Ay</span>
+                            <span class="text-slate-400">₺30.000</span>
+                        </div>
+                    </div>
+
+                    <div id="sim-result-box" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 space-y-1 text-xs">
+                        <!-- JS ile güncellenir -->
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-semibold">Kapat</button>
+                    </div>
+                </div>
+            `);
+
+            updateSimulationView(totalRemaining, currentMonthly, currentMonths);
+        }
+
+        function updateSimulationView(totalRemaining, currentMonthly, currentMonths) {
+            const extra = parseFloat(document.getElementById('sim-extra-slider').value) || 0;
+            document.getElementById('sim-extra-label').textContent = `+${formatTL(extra)} / Ay`;
+
+            const resBox = document.getElementById('sim-result-box');
+            if (totalRemaining <= 0) {
+                resBox.innerHTML = `<p class="font-bold text-emerald-700 dark:text-emerald-300">Aktif borcunuz bulunmuyor!</p>`;
+                return;
+            }
+
+            const newMonthly = currentMonthly + extra;
+            const newMonths = newMonthly > 0 ? Math.ceil(totalRemaining / newMonthly) : 0;
+            const savedMonths = Math.max(0, currentMonths - newMonths);
+
+            resBox.innerHTML = `
+                <div class="flex justify-between">
+                    <span>Yeni Aylık Toplam Ödeme:</span>
+                    <strong>${formatTL(newMonthly)}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span>Yeni Ortalama Bitiş Süresi:</span>
+                    <strong class="text-emerald-700 dark:text-emerald-300 text-sm">${newMonths} Ay</strong>
+                </div>
+                <div class="pt-1 border-t border-emerald-200 dark:border-emerald-800/60 font-bold text-emerald-700 dark:text-emerald-300">
+                    ⚡ Borçlarınızdan yaklaşık ${savedMonths} ay daha erken kurtulursunuz!
+                </div>
+            `;
+        }
+
+        // Veri Sıfırlama / Örnek Veri Yükleme Modalı
+        function confirmResetDemo() {
+            openModal(`
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="font-bold text-lg">Veri Yönetimi</h3>
+                        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Uygulamadaki mevcut verilerinizi tamamen sıfırlayabilir veya başlangıçtaki örnek (demo) verileri geri yükleyebilirsiniz.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                        <button onclick="resetToDemoData()" class="p-3 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate"></i> Örnek Verileri Yükle
+                        </button>
+                        <button onclick="clearAllData()" class="p-3 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/60 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 text-xs font-bold hover:bg-rose-100 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-trash"></i> Tüm Verileri Sıfırla (Boş)
+                        </button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function resetToDemoData() {
+            appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            saveState();
+            closeModal();
+            showToast('Örnek başlangıç verileri yüklendi.', 'info');
+        }
+
+        function clearAllData() {
+            appState = { salary: 0, incomes: [], expenses: [], debts: [] };
+            saveState();
+            closeModal();
+            showToast('Tüm veriler sıfırlandı. Kendi verilerinizi girebilirsiniz.', 'info');
+        }
+
+        // Modal Yardımcıları
+        function openModal(htmlContent) {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = htmlContent;
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+
+        // Toast Bildirim Gösterici
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const colors = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-rose-600 text-white',
+                info: 'bg-slate-800 dark:bg-slate-700 text-white'
+            };
+
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold transform transition-all duration-300 ${colors[type] || colors.info}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || icons.info} text-sm"></i>
+                <span>${escapeHTML(message)}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // Tema Değiştirici (Koyu / Açık)
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+            const htmlEl = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+
+            if (savedTheme === 'dark') {
+                htmlEl.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                htmlEl.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon text-slate-600';
+            }
+        }
+
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            const isDark = htmlEl.classList.contains('dark');
+            localStorage.setItem(THEME_KEY, isDark ? 'light' : 'dark');
+            initTheme();
+        }
+
+        // XSS Koruması
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Sayfa Yüklendiğinde Başlat
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            const now = new Date();
+            document.getElementById('current-date-display').textContent =
+                `${MONTHS_TR[now.getMonth()]} ${now.getFullYear()} Dönemi • Para Programlama Paneli`;
+            renderAll();
+        });
+    </script>
+</body>
+</html>

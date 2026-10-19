@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elektrik-Elektronik Mühendisliği — Nasıl Çalışır & Kariyer Rehberi</title>
+<style>
+  :root {
+    --bg: #020c08;
+    --surface: #071a0f;
+    --accent:  #00ff88;
+    --accent2: #00aaff;
+    --accent3: #ffcc00;
+    --accent4: #ff6b35;
+    --accent5: #bf5af2;
+    --text: #e2e8f0;
+    --text-muted: #7a9e8a;
+    --glow:  0 0 30px rgba(0,255,136,0.35);
+    --glow2: 0 0 30px rgba(0,170,255,0.35);
+    --glow3: 0 0 30px rgba(255,204,0,0.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:rgba(2,12,8,0.88);backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(0,255,136,0.12);
+    padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
+  .nav-logo{font-size:1.25rem;font-weight:700;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    display:flex;align-items:center;gap:10px;}
+  nav ul{display:flex;gap:2rem;list-style:none;}
+  nav a{color:var(--text-muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:color .3s;}
+  nav a:hover{color:var(--accent);}
+
+  /* PROGRESS */
+  #progress-bar{position:fixed;top:0;left:0;height:3px;z-index:9999;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .1s;}
+
+  /* CANVAS BG */
+  #circuit-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;}
+
+  /* COMMON */
+  .section-inner{max-width:1100px;margin:0 auto;padding:6rem 2rem;}
+  .section-badge{display:inline-flex;align-items:center;gap:8px;
+    background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.22);
+    border-radius:100px;padding:6px 16px;font-size:.8rem;font-weight:600;
+    color:var(--accent);margin-bottom:1.2rem;letter-spacing:.05em;text-transform:uppercase;}
+  h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.15;}
+  h2{font-size:clamp(1.6rem,3vw,2.6rem);font-weight:700;line-height:1.2;}
+  h3{font-size:1.15rem;font-weight:600;}
+  p{color:var(--text-muted);line-height:1.75;}
+
+  .gt{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .gt2{background:linear-gradient(135deg,var(--accent3),var(--accent4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .gt3{background:linear-gradient(135deg,var(--accent5),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+  /* HERO */
+  #hero{min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    position:relative;overflow:hidden;padding:8rem 2rem 4rem;}
+  .hero-bg{position:absolute;inset:0;
+    background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,255,136,0.12) 0%,transparent 70%),
+               radial-gradient(ellipse 60% 50% at 15% 80%,rgba(0,170,255,0.1) 0%,transparent 60%),
+               radial-gradient(ellipse 50% 40% at 85% 70%,rgba(255,204,0,0.07) 0%,transparent 60%);}
+  .hero-content{position:relative;z-index:2;max-width:860px;}
+  #hero h1{margin-bottom:1.4rem;}
+  #hero>p{font-size:1.1rem;max-width:600px;margin:0 auto 2.5rem;}
+  .btn-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+  .btn{padding:14px 32px;border-radius:12px;font-weight:600;font-size:1rem;
+    cursor:pointer;border:none;text-decoration:none;transition:all .3s;
+    display:inline-flex;align-items:center;gap:8px;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:var(--glow);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(0,255,136,.5);}
+  .btn-secondary{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.18);}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* OSCILLOSCOPE */
+  #osc-wrap{width:100%;max-width:720px;margin:3rem auto 0;position:relative;z-index:2;}
+  #osc-canvas{width:100%;height:140px;border-radius:16px;
+    background:rgba(0,20,10,.8);border:1px solid rgba(0,255,136,.2);
+    box-shadow:0 0 40px rgba(0,255,136,.12);}
+  .osc-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:.72rem;color:var(--text-muted);}
+
+  .scroll-hint{margin-top:3rem;animation:bounce 2s infinite;color:var(--text-muted);
+    font-size:.85rem;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:2;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+
+  /* STATS */
+  #stats{padding:3rem 2rem;max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem;}
+  .stat-card{background:var(--surface);border-radius:16px;border:1px solid rgba(255,255,255,.05);
+    padding:1.8rem;text-align:center;transition:transform .3s,box-shadow .3s;}
+  .stat-card:hover{transform:translateY(-4px);box-shadow:var(--glow);}
+  .stat-number{font-size:2.4rem;font-weight:800;display:block;}
+  .stat-label{font-size:.85rem;color:var(--text-muted);margin-top:4px;}
+
+  /* CARDS GENERIC */
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:3rem;}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem;}
+
+  .card{background:var(--surface);border-radius:20px;border:1px solid rgba(255,255,255,.05);
+    padding:2rem;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s;cursor:default;}
+  .card::before{content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(0,255,136,.04),transparent);opacity:0;transition:opacity .3s;}
+  .card:hover{transform:translateY(-6px);}
+  .card:hover::before{opacity:1;}
+  .card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;
+    justify-content:center;font-size:1.5rem;margin-bottom:1.2rem;}
+  .card-num{position:absolute;top:1.4rem;right:1.4rem;font-size:.72rem;font-weight:700;
+    color:var(--text-muted);background:rgba(255,255,255,.05);border-radius:8px;padding:3px 8px;}
+  .card h3{margin-bottom:.6rem;}
+  .card p{font-size:.875rem;}
+
+  /* CIRCUIT DIAGRAM */
+  #circuit-viz{padding:6rem 2rem;background:rgba(7,26,15,.6);}
+  #circuit-viz .inner{max-width:1100px;margin:0 auto;}
+  .viz-box{background:var(--surface);border-radius:24px;border:1px solid rgba(0,255,136,.14);
+    padding:2rem;margin-top:3rem;}
+  #circuit-svg{width:100%;height:320px;}
+
+  /* DISCIPLINES */
+  #disciplines{padding:6rem 0;}
+  #disciplines .inner{max-width:1100px;margin:0 auto;padding:0 2rem;}
+  .disc-card{background:var(--surface);border-radius:20px;
+    border:1px solid rgba(255,255,255,.05);padding:2rem;transition:all .3s;}
+  .disc-card:hover{transform:translateY(-4px);}
+  .disc-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;}
+  .disc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+  .disc-card ul{list-style:none;margin-top:1rem;}
+  .disc-card li{padding:5px 0;font-size:.875rem;color:var(--text-muted);
+    border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;}
+  .disc-card li::before{content:'⚡';font-size:.7rem;}
+
+  /* CAREERS */
+  #careers{padding:6rem 2rem;background:rgba(7,26,15,.5);}
+  #careers .inner{max-width:1100px;margin:0 auto;}
+  .careers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem;}
+  .career-card{background:var(--bg);border-radius:20px;border:1px solid rgba(255,255,255,.07);
+    padding:2rem;transition:all .3s;position:relative;overflow:hidden;}
+  .career-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--stripe,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+  .career-card:hover::after{transform:scaleX(1);}
+  .career-card:hover{border-color:rgba(0,255,136,.22);transform:translateY(-4px);}
+  .career-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;}
+  .career-icon{font-size:2rem;}
+  .salary-badge{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.28);
+    color:var(--accent);border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;}
+  .career-card h3{margin-bottom:.5rem;}
+  .career-card>p{font-size:.875rem;margin-bottom:1.2rem;}
+  .skill-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.2rem;}
+  .skill-tag{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.18);
+    color:var(--accent);border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:500;}
+  .demand-bar{margin-top:.5rem;}
+  .demand-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-muted);margin-bottom:4px;}
+  .demand-track{height:6px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;}
+  .demand-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+
+  /* ROADMAP */
+  #roadmap{padding:6rem 2rem;max-width:1100px;margin:0 auto;}
+  .roadmap-line{position:relative;padding-left:3rem;margin-top:3rem;}
+  .roadmap-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;
+    width:2px;background:linear-gradient(to bottom,var(--accent),var(--accent2),transparent);}
+  .roadmap-item{position:relative;margin-bottom:2.5rem;background:var(--surface);
+    border-radius:16px;border:1px solid rgba(255,255,255,.05);padding:1.5rem;
+    transition:transform .3s,box-shadow .3s;}
+  .roadmap-item:hover{transform:translateX(6px);box-shadow:var(--glow);}
+  .roadmap-dot{position:absolute;left:-2.7rem;top:1.5rem;
+    width:24px;height:24px;border-radius:50%;background:var(--surface);
+    border:2px solid var(--accent);display:flex;align-items:center;
+    justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);}
+  .roadmap-phase{font-size:.75rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;}
+  .roadmap-item h3{margin-bottom:.5rem;}
+  .roadmap-item p{font-size:.875rem;}
+  .roadmap-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:1rem;}
+  .roadmap-tag{background:rgba(255,255,255,.05);border-radius:6px;
+    padding:3px 10px;font-size:.75rem;color:var(--text-muted);}
+
+  /* TOOLS */
+  #tools{padding:6rem 2rem;background:rgba(7,26,15,.5);}
+  #tools .inner{max-width:1100px;margin:0 auto;}
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:1rem;margin-top:3rem;}
+  .tool-pill{background:var(--bg);border:1px solid rgba(255,255,255,.07);border-radius:14px;
+    padding:1.2rem;text-align:center;transition:all .3s;cursor:default;}
+  .tool-pill:hover{border-color:var(--accent);transform:translateY(-3px);
+    box-shadow:0 0 20px rgba(0,255,136,.2);}
+  .tool-emoji{font-size:1.8rem;display:block;margin-bottom:8px;}
+  .tool-name{font-size:.8rem;font-weight:600;}
+  .tool-cat{font-size:.7rem;color:var(--text-muted);margin-top:2px;}
+
+  /* CTA */
+  #cta{padding:8rem 2rem;text-align:center;position:relative;overflow:hidden;}
+  #cta::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,255,136,.1),transparent 70%);}
+  #cta .inner{position:relative;z-index:1;max-width:700px;margin:0 auto;}
+  #cta h2{margin-bottom:1rem;}
+  #cta p{margin-bottom:2.5rem;font-size:1.05rem;}
+
+  footer{border-top:1px solid rgba(255,255,255,.05);padding:2rem;
+    text-align:center;color:var(--text-muted);font-size:.85rem;}
+
+  /* FADE-UP */
+  .fade-up{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s;}
+  .fade-up.visible{opacity:1;transform:translateY(0);}
+  .fade-up:nth-child(2){transition-delay:.1s;}
+  .fade-up:nth-child(3){transition-delay:.2s;}
+  .fade-up:nth-child(4){transition-delay:.3s;}
+  .fade-up:nth-child(5){transition-delay:.4s;}
+  .fade-up:nth-child(6){transition-delay:.5s;}
+
+  @media(max-width:640px){nav ul{display:none;}}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<canvas id="circuit-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect x="2" y="14" width="6" height="4" rx="1" fill="#00ff88"/>
+      <rect x="24" y="14" width="6" height="4" rx="1" fill="#00aaff"/>
+      <circle cx="16" cy="16" r="5" stroke="url(#eg)" stroke-width="2"/>
+      <line x1="8" y1="16" x2="11" y2="16" stroke="#00ff88" stroke-width="2"/>
+      <line x1="21" y1="16" x2="24" y2="16" stroke="#00aaff" stroke-width="2"/>
+      <defs><linearGradient id="eg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#00ff88"/><stop offset="1" stop-color="#00aaff"/></linearGradient></defs>
+    </svg>
+    EEE Akademi
+  </div>
+  <ul>
+    <li><a href="#how">Temel Kavramlar</a></li>
+    <li><a href="#disciplines">Uzmanlıklar</a></li>
+    <li><a href="#careers">Kariyer</a></li>
+    <li><a href="#roadmap">Yol Haritası</a></li>
+    <li><a href="#tools">Araçlar</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="section-badge">⚡ Elektrik-Elektronik Mühendisliği</div>
+    <h1>
+      <span class="gt">Elektrik &amp; Elektronik</span><br>
+      Mühendisliği Rehberi
+    </h1>
+    <p style="font-size:1.1rem;max-width:600px;margin:0 auto 2.5rem;">
+      Elektrik enerjisinden mikroçiplere, güç sistemlerinden gömülü sistemlere —
+      EEM'nin temellerini, alt dallarını ve kariyer yollarını keşfedin.
+    </p>
+    <div class="btn-group">
+      <a href="#how" class="btn btn-primary">Keşfetmeye Başla ↓</a>
+      <a href="#careers" class="btn btn-secondary">Kariyer Yolları</a>
+    </div>
+  </div>
+
+  <!-- Oscilloscope -->
+  <div id="osc-wrap">
+    <canvas id="osc-canvas"></canvas>
+    <div class="osc-labels">
+      <span>Zaman →</span>
+      <span>Gerilim Dalgaformu (AC / PWM / Dijital)</span>
+      <span>Genlik ↑</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Kaydırın</span>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 4v12M5 11l5 5 5-5" stroke="#7a9e8a" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stat-card fade-up">
+    <span class="stat-number gt"><span class="counter" data-target="320">0</span>K+</span>
+    <div class="stat-label">Türkiye'de EEM mezun sayısı (2024)</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number" style="color:var(--accent3)">$<span class="counter" data-target="95">0</span>K+</span>
+    <div class="stat-label">Ortalama yıllık maaş (ABD, giriş)</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number gt2"><span class="counter" data-target="2030">0</span></span>
+    <div class="stat-label">Milyar $ — küresel elektrik pazarı</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number gt3"><span class="counter" data-target="17">0</span>%</span>
+    <div class="stat-label">İstihdam büyüme beklentisi (2024–34)</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how">
+<div class="section-inner">
+  <div class="section-badge">⚙️ Temel Kavramlar</div>
+  <h2>EEM'nin <span class="gt">Temel Taşları</span></h2>
+  <p style="margin-top:.8rem;max-width:640px;">Elektrik-Elektronik Mühendisliği, birbirini tamamlayan 6 temel alan üzerine inşa edilmiştir. Her biri modern teknolojinin vazgeçilmez bir parçasıdır.</p>
+
+  <div class="grid-2">
+    <div class="card fade-up" style="border-color:rgba(0,255,136,.15);">
+      <span class="card-num">01</span>
+      <div class="card-icon" style="background:rgba(0,255,136,.1);">⚡</div>
+      <h3>Devre Teorisi</h3>
+      <p>Kirchhoff yasaları, Ohm kanunu, AC/DC devre analizi. Her şeyin temeli: akım, gerilim, direnç, empedans.</p>
+    </div>
+    <div class="card fade-up" style="border-color:rgba(0,170,255,.15);">
+      <span class="card-num">02</span>
+      <div class="card-icon" style="background:rgba(0,170,255,.1);">📡</div>
+      <h3>Elektromanyetik Alan</h3>
+      <p>Maxwell denklemleri, dalga yayılımı, anten teorisi. Kablosuz iletişimin ve transformatörlerin fiziksel temeli.</p>
+    </div>
+    <div class="card fade-up" style="border-color:rgba(255,204,0,.15);">
+      <span class="card-num">03</span>
+      <div class="card-icon" style="background:rgba(255,204,0,.1);">🔌</div>
+      <h3>Güç Elektroniği</h3>
+      <p>Dönüştürücüler (AC/DC, DC/DC), invertörler, motor sürücüleri. Yenilenebilir enerji sistemlerinin kalbi.</p>
+    </div>
+    <div class="card fade-up" style="border-color:rgba(255,107,53,.15);">
+      <span class="card-num">04</span>
+      <div class="card-icon" style="background:rgba(255,107,53,.1);">🔬</div>
+      <h3>Elektronik Devreler</h3>
+      <p>Transistörler, op-amp'lar, filtreler, osilatörler. Analog ve dijital elektroniğin yapı taşları.</p>
+    </div>
+    <div class="card fade-up" style="border-color:rgba(191,90,242,.15);">
+      <span class="card-num">05</span>
+      <div class="card-icon" style="background:rgba(191,90,242,.1);">💡</div>
+      <h3>Dijital Sistemler</h3>
+      <p>Mantık kapıları, flip-floplar, FPGA, mikrodenetleyici mimarisi. Bilgisayar donanımının temeli.</p>
+    </div>
+    <div class="card fade-up" style="border-color:rgba(0,255,136,.15);">
+      <span class="card-num">06</span>
+      <div class="card-icon" style="background:rgba(16,185,129,.1);">📊</div>
+      <h3>Sinyal İşleme</h3>
+      <p>Fourier dönüşümleri, filtre tasarımı, örnekleme teorisi (Nyquist). Ses, görüntü ve sensör verilerini işleme.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CIRCUIT VISUALIZER -->
+<div id="circuit-viz">
+<div class="inner">
+  <div class="section-badge">🔮 Devre Simülasyonu</div>
+  <h2>Elektron Akışı <span class="gt">Canlı Simülasyonu</span></h2>
+  <p style="margin-top:.8rem;max-width:640px;">Devre elemanlarından geçen elektron akışını izleyin. Her nokta bir elektronu, renk akım yoğunluğunu temsil eder.</p>
+  <div class="viz-box">
+    <svg id="circuit-svg" viewBox="0 0 900 320"></svg>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-top:1.5rem;justify-content:center;">
+      <span style="font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block;"></span>Yüksek akım
+      </span>
+      <span style="font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent3);display:inline-block;"></span>Gerilim düşümü
+      </span>
+      <span style="font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent2);display:inline-block;"></span>Kondansatör dolumu
+      </span>
+    </div>
+    <!-- Freq meter -->
+    <div style="margin-top:1.5rem;">
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--text-muted);margin-bottom:8px;">
+        <span>Frekans Analizi</span><span id="freq-label">50 Hz</span>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;">
+        <div id="freq-fill" style="height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent3));width:50%;transition:width .3s;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- DISCIPLINES -->
+<div id="disciplines">
+<div class="inner">
+  <div class="section-badge">🗂️ Uzmanlık Alanları</div>
+  <h2>EEM'nin <span class="gt2">Alt Dalları</span></h2>
+  <p style="margin-top:.8rem;max-width:640px;">Elektrik-Elektronik Mühendisliği onlarca uzmanlık dalına ayrılır. Her alan farklı sektörlere ve teknolojilere kapı açar.</p>
+
+  <div class="grid-3" style="margin-top:3rem;">
+
+    <div class="disc-card fade-up" style="border-color:rgba(0,255,136,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(0,255,136,.1);">⚡</div>
+        <div><h3>Güç Sistemleri</h3><p style="font-size:.8rem;">Power Engineering</p></div>
+      </div>
+      <p style="font-size:.875rem;">Elektrik üretimi, iletimi ve dağıtımı. Şebekeler, transformatörler, yenilenebilir enerji entegrasyonu.</p>
+      <ul>
+        <li>Enerji iletim hatları</li>
+        <li>Güç trafoları tasarımı</li>
+        <li>Smart Grid / akıllı şebeke</li>
+        <li>Yenilenebilir enerji (güneş, rüzgar)</li>
+        <li>Enerji depolama sistemleri</li>
+      </ul>
+    </div>
+
+    <div class="disc-card fade-up" style="border-color:rgba(0,170,255,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(0,170,255,.1);">📡</div>
+        <div><h3>Haberleşme</h3><p style="font-size:.8rem;">Telecommunications</p></div>
+      </div>
+      <p style="font-size:.875rem;">Kablosuz ve kablolu iletişim sistemleri. 5G, fiber optik, uydu haberleşmesi.</p>
+      <ul>
+        <li>RF ve mikrodalga sistemleri</li>
+        <li>5G/6G ağ tasarımı</li>
+        <li>Fiber optik iletişim</li>
+        <li>Anten ve propagasyon</li>
+        <li>Uydu iletişimi</li>
+      </ul>
+    </div>
+
+    <div class="disc-card fade-up" style="border-color:rgba(255,204,0,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(255,204,0,.1);">🤖</div>
+        <div><h3>Kontrol & Otomasyon</h3><p style="font-size:.8rem;">Control Engineering</p></div>
+      </div>
+      <p style="font-size:.875rem;">Geri beslemeli kontrol sistemleri, PID, adaptif kontrol; sanayi otomasyonu ve robotik.</p>
+      <ul>
+        <li>PID ve MPC denetleyiciler</li>
+        <li>Servo motor sistemleri</li>
+        <li>Endüstriyel PLC programlama</li>
+        <li>Robot kinematik & dinamik</li>
+        <li>SCADA sistemleri</li>
+      </ul>
+    </div>
+
+    <div class="disc-card fade-up" style="border-color:rgba(255,107,53,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(255,107,53,.1);">🔬</div>
+        <div><h3>Mikroelektronik</h3><p style="font-size:.8rem;">VLSI & IC Design</p></div>
+      </div>
+      <p style="font-size:.875rem;">Entegre devre tasarımı, yarı iletken teknolojisi; ASIC, FPGA, SoC tasarımı.</p>
+      <ul>
+        <li>CMOS devre tasarımı</li>
+        <li>FPGA programlama</li>
+        <li>ASIC layout ve verifikasyon</li>
+        <li>Yarı iletken üretim süreci</li>
+        <li>Sistem üzeri çip (SoC)</li>
+      </ul>
+    </div>
+
+    <div class="disc-card fade-up" style="border-color:rgba(191,90,242,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(191,90,242,.1);">💾</div>
+        <div><h3>Gömülü Sistemler</h3><p style="font-size:.8rem;">Embedded Systems</p></div>
+      </div>
+      <p style="font-size:.875rem;">Mikrodenetleyici tabanlı sistem tasarımı; IoT cihazları, gerçek zamanlı sistemler.</p>
+      <ul>
+        <li>ARM Cortex mikrodenetleyiciler</li>
+        <li>RTOS (FreeRTOS, Zephyr)</li>
+        <li>IoT protokolleri (MQTT, BLE)</li>
+        <li>Donanım-yazılım arayüzü</li>
+        <li>Güç tüketimi optimizasyonu</li>
+      </ul>
+    </div>
+
+    <div class="disc-card fade-up" style="border-color:rgba(0,255,136,.18);">
+      <div class="disc-header">
+        <div class="disc-icon" style="background:rgba(16,185,129,.1);">📈</div>
+        <div><h3>Sinyal & Görüntü İşleme</h3><p style="font-size:.8rem;">DSP & Image Processing</p></div>
+      </div>
+      <p style="font-size:.875rem;">Dijital sinyal işleme algoritmaları; tıbbi görüntüleme, radar, ses işleme.</p>
+      <ul>
+        <li>FFT ve spektral analiz</li>
+        <li>Adaptif filtreler</li>
+        <li>Tıbbi görüntüleme (MRI, CT)</li>
+        <li>Radar sinyal işleme</li>
+        <li>Audio DSP uygulamaları</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- CAREERS -->
+<div id="careers">
+<div class="inner">
+  <div class="section-badge">💼 Kariyer Rehberi</div>
+  <h2>EEM ile <span class="gt2">Kariyer Yolları</span></h2>
+  <p style="margin-top:.8rem;max-width:650px;">EEM mezunları savunma sanayiinden otomotive, enerji sektöründen telekomünikasyona kadar geniş bir yelpazede istihdam edilir.</p>
+
+  <div class="careers-grid">
+
+    <div class="career-card fade-up" style="--stripe:var(--accent);">
+      <div class="career-top">
+        <span class="career-icon">⚡</span>
+        <span class="salary-badge">₺80K–₺220K/ay</span>
+      </div>
+      <h3>Güç Sistemleri Mühendisi</h3>
+      <p>Elektrik şebekelerini tasarlar, koruma sistemleri geliştirir; yenilenebilir enerji santrallerinde çalışır.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">ETAP</span><span class="skill-tag">PSCAD</span>
+        <span class="skill-tag">AutoCAD Electrical</span><span class="skill-tag">IEC 61850</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>90%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:90%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent2);">
+      <div class="career-top">
+        <span class="career-icon">📡</span>
+        <span class="salary-badge">₺70K–₺200K/ay</span>
+      </div>
+      <h3>RF / Telekomünikasyon Mühendisi</h3>
+      <p>Kablosuz iletişim sistemleri, 5G baz istasyonları, anten tasarımı ve frekans planlaması yapar.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">MATLAB</span><span class="skill-tag">CST Studio</span>
+        <span class="skill-tag">HFSS</span><span class="skill-tag">LTE/5G</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>85%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:85%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent3);">
+      <div class="career-top">
+        <span class="career-icon">🤖</span>
+        <span class="salary-badge">₺75K–₺210K/ay</span>
+      </div>
+      <h3>Kontrol / Otomasyon Mühendisi</h3>
+      <p>Endüstriyel otomasyon sistemleri, PLC programlama, robot kontrolü ve süreç optimizasyonu.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Siemens S7</span><span class="skill-tag">Allen-Bradley</span>
+        <span class="skill-tag">SCADA</span><span class="skill-tag">Simulink</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>92%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:92%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent4);">
+      <div class="career-top">
+        <span class="career-icon">💾</span>
+        <span class="salary-badge">₺80K–₺250K/ay</span>
+      </div>
+      <h3>Gömülü Sistem Mühendisi</h3>
+      <p>Mikrodenetleyici tabanlı ürün geliştirme; otomotiv ECU, IoT cihazları, tıbbi cihaz yazılımı.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">STM32</span><span class="skill-tag">FreeRTOS</span>
+        <span class="skill-tag">C/C++</span><span class="skill-tag">CAN/SPI/I2C</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>95%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:95%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent5);">
+      <div class="career-top">
+        <span class="career-icon">🔬</span>
+        <span class="salary-badge">$120K–$200K</span>
+      </div>
+      <h3>VLSI / Chip Design Mühendisi</h3>
+      <p>Intel, NVIDIA, Qualcomm gibi şirketlerde entegre devre tasarımı ve doğrulaması. Yüksek maaşlı niş alan.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Verilog/VHDL</span><span class="skill-tag">Cadence</span>
+        <span class="skill-tag">Synopsys</span><span class="skill-tag">DFT</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>88%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:88%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent);">
+      <div class="career-top">
+        <span class="career-icon">🚗</span>
+        <span class="salary-badge">₺85K–₺240K/ay</span>
+      </div>
+      <h3>Otomotiv Elektroniği Mühendisi</h3>
+      <p>Elektrikli araç sistemleri, batarya yönetim sistemi (BMS), ADAS ve otonom sürüş elektroniği.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">BMS</span><span class="skill-tag">AUTOSAR</span>
+        <span class="skill-tag">CAN Bus</span><span class="skill-tag">ISO 26262</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>97%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:97%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#14b8a6;">
+      <div class="career-top">
+        <span class="career-icon">🏥</span>
+        <span class="salary-badge">₺70K–₺190K/ay</span>
+      </div>
+      <h3>Biyomedikal Elektronik Mühendisi</h3>
+      <p>MRI, EKG, ultrason gibi tıbbi cihazların elektronik sistemlerini tasarlar ve geliştir.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Analog Ön İşleme</span><span class="skill-tag">DSP</span>
+        <span class="skill-tag">IEC 60601</span><span class="skill-tag">LabVIEW</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>80%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#f43f5e;">
+      <div class="career-top">
+        <span class="career-icon">🛡️</span>
+        <span class="salary-badge">₺90K–₺280K/ay</span>
+      </div>
+      <h3>Savunma Sanayii Mühendisi</h3>
+      <p>Radar sistemleri, elektronik harp, İHA elektroniği ve füze güdüm sistemleri tasarımı.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Radar DSP</span><span class="skill-tag">FPGA</span>
+        <span class="skill-tag">EW Sistemleri</span><span class="skill-tag">MIL-STD</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>93%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:93%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:var(--accent3);">
+      <div class="career-top">
+        <span class="career-icon">☀️</span>
+        <span class="salary-badge">₺65K–₺180K/ay</span>
+      </div>
+      <h3>Yenilenebilir Enerji Mühendisi</h3>
+      <p>Güneş paneli sistemleri, rüzgar türbini elektroniği, şebeke entegrasyonu ve enerji depolama.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">PVsyst</span><span class="skill-tag">HOMER</span>
+        <span class="skill-tag">İnvertör Tasarımı</span><span class="skill-tag">Grid Codes</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>89%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:89%"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap">
+  <div class="section-badge">🗺️ Yol Haritası</div>
+  <h2>EEM Kariyer <span class="gt">Başlangıç Rehberi</span></h2>
+  <p style="margin-top:.8rem;max-width:640px;">Üniversite eğitiminizi en verimli şekilde kullanmak ve mezun olduğunuzda hazır olmak için izlemeniz gereken yol:</p>
+
+  <div class="roadmap-line">
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">1</div>
+      <div class="roadmap-phase">1. Yıl · Temel</div>
+      <h3>Matematik & Fizik Temeli</h3>
+      <p>Diferansiyel denklemler, lineer cebir, komplex sayılar. Devre analizi (KVL, KCL), Ohm kanunu. Lab derslerinde multimetre ve osiloskop kullanımını öğrenin.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">Multimetre</span>
+        <span class="roadmap-tag">Breadboard</span>
+        <span class="roadmap-tag">KVL/KCL</span>
+        <span class="roadmap-tag">LTspice</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">2</div>
+      <div class="roadmap-phase">2. Yıl · Elektronik</div>
+      <h3>Analog & Dijital Elektronik</h3>
+      <p>Transistör, op-amp, filtre tasarımı. Dijital elektronik: mantık kapıları, flip-floplar, sayıcılar. MATLAB ile ilk simülasyonlarınızı yapın.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">MATLAB</span>
+        <span class="roadmap-tag">Proteus</span>
+        <span class="roadmap-tag">Op-Amp</span>
+        <span class="roadmap-tag">VHDL/Verilog</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">3</div>
+      <div class="roadmap-phase">2–3. Yıl · Gömülü</div>
+      <h3>Mikrodenetleyici & Programlama</h3>
+      <p>Arduino ile başlayın, STM32'ye geçin. C/C++ dilini öğrenin. İlk kişisel projenizi yapın: sensör okuma, motor kontrolü veya IoT cihazı.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">STM32</span>
+        <span class="roadmap-tag">Arduino</span>
+        <span class="roadmap-tag">C/C++</span>
+        <span class="roadmap-tag">Raspberry Pi</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">4</div>
+      <div class="roadmap-phase">3. Yıl · Uzmanlaşma</div>
+      <h3>Alan Seçimi & Derinleşme</h3>
+      <p>Güç sistemleri, haberleşme, gömülü veya kontrol alanlarından birini seçin. İlgili yazılımları öğrenin. TÜBİTAK projesine veya staja başvurun.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">ETAP / PSCAD</span>
+        <span class="roadmap-tag">Simulink</span>
+        <span class="roadmap-tag">Cadence</span>
+        <span class="roadmap-tag">Staj</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">5</div>
+      <div class="roadmap-phase">4. Yıl · Proje</div>
+      <h3>Bitirme Projesi & Sertifikalar</h3>
+      <p>Güçlü bir bitirme projesi yapın. IEEE, IET üyeliklerine katılın. CCNA, AWS veya alanınıza özel sertifikaları alın. GitHub profilinizi doldurun.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">IEEE</span>
+        <span class="roadmap-tag">GitHub</span>
+        <span class="roadmap-tag">LinkedIn</span>
+        <span class="roadmap-tag">Sertifika</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up" style="border-color:rgba(0,255,136,.3);">
+      <div class="roadmap-dot" style="border-color:var(--accent);color:var(--accent);">✓</div>
+      <div class="roadmap-phase" style="color:var(--accent)">Mezuniyet Sonrası</div>
+      <h3>İş Arama & Yüksek Lisans</h3>
+      <p>Portföy projelerinizi hazırlayın. ASELSAN, ROKETSAN, Arçelik, Vestel, Schneider gibi hedef şirketleri belirleyin. Yüksek lisans için burs başvurusu yapın.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">ASELSAN</span>
+        <span class="roadmap-tag">ROKETSAN</span>
+        <span class="roadmap-tag">Arçelik</span>
+        <span class="roadmap-tag">Yüksek Lisans</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div id="tools">
+<div class="inner">
+  <div class="section-badge">🛠️ Yazılım & Araçlar</div>
+  <h2>EEM Ekosisteminin <span class="gt3">Araçları</span></h2>
+  <p style="margin-top:.8rem;max-width:640px;">Elektrik-Elektronik Mühendislerinin tasarım, simülasyon ve geliştirme süreçlerinde kullandığı yazılımlar:</p>
+
+  <div class="tools-grid">
+    <div class="tool-pill fade-up"><span class="tool-emoji">📐</span><div class="tool-name">MATLAB</div><div class="tool-cat">Simülasyon</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔄</span><div class="tool-name">Simulink</div><div class="tool-cat">Kontrol</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">⚡</span><div class="tool-name">LTspice</div><div class="tool-cat">Devre Sim.</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🐛</span><div class="tool-name">Proteus</div><div class="tool-cat">PCB & Sim.</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🟢</span><div class="tool-name">Altium</div><div class="tool-cat">PCB Tasarım</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔵</span><div class="tool-name">KiCad</div><div class="tool-cat">PCB (Ücretsiz)</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">⚙️</span><div class="tool-name">Cadence</div><div class="tool-cat">IC Tasarım</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔧</span><div class="tool-name">Synopsys</div><div class="tool-cat">VLSI</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🏭</span><div class="tool-name">ETAP</div><div class="tool-cat">Güç Sistemi</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🌐</span><div class="tool-name">PSCAD</div><div class="tool-cat">Güç Sim.</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📡</span><div class="tool-name">HFSS</div><div class="tool-cat">EM Sim.</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📻</span><div class="tool-name">CST Studio</div><div class="tool-cat">RF Tasarım</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🖥️</span><div class="tool-name">STM32CubeIDE</div><div class="tool-cat">Gömülü</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🎛️</span><div class="tool-name">LabVIEW</div><div class="tool-cat">Ölçüm</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🐍</span><div class="tool-name">Python</div><div class="tool-cat">Analiz/DSP</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📊</span><div class="tool-name">AutoCAD Elec.</div><div class="tool-cat">Elektrik Çizim</div></div>
+  </div>
+</div>
+</div>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="inner">
+    <div class="section-badge">🎯 Harekete Geç</div>
+    <h2>EEM <span class="gt">Kariyerinize</span> Başlayın</h2>
+    <p>Enerji dönüşümü, elektrikli araçlar, 5G ve savunma sanayii — EEM mezunları için altın çağ başlıyor.</p>
+    <div class="btn-group">
+      <a href="#roadmap" class="btn btn-primary">Yol Haritasını Gör ↑</a>
+      <a href="#careers" class="btn btn-secondary">Kariyer Seç</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>EEE Akademi — Elektrik-Elektronik Mühendisliği Eğitim Platformu &nbsp;|&nbsp; 2026</p>
+</footer>
+
+<script>
+// ── PROGRESS BAR ──
+window.addEventListener('scroll',()=>{
+  const pct=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  document.getElementById('progress-bar').style.width=pct+'%';
+});
+
+// ── CIRCUIT BOARD PARTICLE BG ──
+(function(){
+  const cv=document.getElementById('circuit-canvas');
+  const cx=cv.getContext('2d');
+  let W,H;
+  const resize=()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;};
+  window.addEventListener('resize',resize);resize();
+
+  // Grid of horizontal/vertical lines
+  const GRID=80;
+  const nodes=[];
+  const wires=[];
+  const electrons=[];
+
+  function buildGrid(){
+    nodes.length=0;wires.length=0;
+    const cols=Math.ceil(W/GRID)+1,rows=Math.ceil(H/GRID)+1;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+      nodes.push({x:c*GRID,y:r*GRID});
+
+    // random horizontal wires
+    for(let i=0;i<35;i++){
+      const r=Math.floor(Math.random()*Math.ceil(H/GRID));
+      const c1=Math.floor(Math.random()*Math.ceil(W/GRID));
+      const c2=c1+Math.floor(Math.random()*5)+2;
+      wires.push({x1:c1*GRID,y1:r*GRID,x2:Math.min(c2*GRID,W),y2:r*GRID,type:'h'});
+    }
+    // random vertical wires
+    for(let i=0;i<20;i++){
+      const c=Math.floor(Math.random()*Math.ceil(W/GRID));
+      const r1=Math.floor(Math.random()*Math.ceil(H/GRID));
+      const r2=r1+Math.floor(Math.random()*4)+1;
+      wires.push({x1:c*GRID,y1:r1*GRID,x2:c*GRID,y2:Math.min(r2*GRID,H),type:'v'});
+    }
+  }
+  buildGrid();
+  window.addEventListener('resize',buildGrid);
+
+  function spawnElectron(){
+    const w=wires[Math.floor(Math.random()*wires.length)];
+    electrons.push({wire:w,t:0,speed:.008+Math.random()*.012,color:Math.random()>.5?'#00ff88':'#00aaff'});
+  }
+
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    // wires
+    wires.forEach(w=>{
+      cx.beginPath();cx.strokeStyle='rgba(0,255,136,0.07)';cx.lineWidth=1;
+      cx.moveTo(w.x1,w.y1);cx.lineTo(w.x2,w.y2);cx.stroke();
+    });
+    // junction dots
+    nodes.forEach(n=>{
+      if(Math.random()<.001){
+        cx.beginPath();cx.arc(n.x,n.y,2,0,Math.PI*2);
+        cx.fillStyle='rgba(0,255,136,0.15)';cx.fill();
+      }
+    });
+    // electrons
+    electrons.forEach((e,i)=>{
+      const {wire:w,t,color}=e;
+      const x=w.x1+(w.x2-w.x1)*t,y=w.y1+(w.y2-w.y1)*t;
+      const g=cx.createRadialGradient(x,y,0,x,y,12);
+      g.addColorStop(0,color.replace(')',',0.9)').replace('rgb','rgba'));
+      g.addColorStop(1,'transparent');
+      cx.beginPath();cx.arc(x,y,12,0,Math.PI*2);cx.fillStyle=g;cx.fill();
+      cx.beginPath();cx.arc(x,y,3,0,Math.PI*2);cx.fillStyle=color;cx.fill();
+      e.t+=e.speed;
+      if(e.t>=1)electrons.splice(i,1);
+    });
+    if(electrons.length<40)spawnElectron();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── OSCILLOSCOPE ──
+(function(){
+  const cv=document.getElementById('osc-canvas');
+  const cx=cv.getContext('2d');
+  let t=0;
+
+  function resize(){cv.width=cv.offsetWidth*2;cv.height=cv.offsetHeight*2;cx.scale(2,2);}
+  window.addEventListener('load',resize);window.addEventListener('resize',resize);
+
+  function draw(){
+    const W=cv.width/2,H=cv.height/2;
+    cx.fillStyle='rgba(0,20,10,0.4)';cx.fillRect(0,0,W,H);
+
+    // Grid
+    cx.strokeStyle='rgba(0,255,136,0.07)';cx.lineWidth=.5;
+    for(let x=0;x<W;x+=W/10){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for(let y=0;y<H;y+=H/4){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+
+    // AC sine wave
+    cx.beginPath();cx.strokeStyle='#00ff88';cx.lineWidth=2;cx.shadowColor='#00ff88';cx.shadowBlur=8;
+    for(let x=0;x<W;x++){
+      const v=Math.sin((x/W)*Math.PI*6+t)*H*.35+H*.5;
+      x===0?cx.moveTo(x,v):cx.lineTo(x,v);
+    }
+    cx.stroke();cx.shadowBlur=0;
+
+    // PWM wave
+    cx.beginPath();cx.strokeStyle='#ffcc00';cx.lineWidth=1.5;cx.shadowColor='#ffcc00';cx.shadowBlur=6;
+    let prev=H*.8;
+    for(let x=0;x<W;x++){
+      const phase=((x/W)*8+t*.5)%(1);
+      const v=phase<.4?H*.2:H*.8;
+      if(Math.abs(v-prev)>10&&x>0){cx.lineTo(x,prev);cx.lineTo(x,v);}
+      else cx.lineTo(x,v);
+      prev=v;
+    }
+    cx.stroke();cx.shadowBlur=0;
+
+    // Digital
+    cx.beginPath();cx.strokeStyle='#00aaff';cx.lineWidth=1.2;cx.shadowColor='#00aaff';cx.shadowBlur=5;
+    let dprev=H*.88;
+    for(let x=0;x<W;x++){
+      const phase=((x/W)*12+t*.3)%1;
+      const v=phase<.5?H*.68:H*.88;
+      if(Math.abs(v-dprev)>5&&x>0){cx.lineTo(x,dprev);cx.lineTo(x,v);}
+      else cx.lineTo(x,v);
+      dprev=v;
+    }
+    cx.stroke();cx.shadowBlur=0;
+
+    t+=.04;
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // Freq slider animation
+  let freq=50,dir=1;
+  setInterval(()=>{
+    freq+=dir*2;if(freq>=200||freq<=20)dir*=-1;
+    document.getElementById('freq-fill').style.width=(freq/200*100)+'%';
+    document.getElementById('freq-label').textContent=freq+' Hz';
+  },100);
+})();
+
+// ── CIRCUIT SVG DIAGRAM ──
+(function(){
+  const svg=document.getElementById('circuit-svg');
+  const W=900,H=320;
+
+  const elements=[
+    // Battery
+    {type:'battery',x:60,y:160},
+    // Resistors
+    {type:'resistor',x:220,y:60,label:'R₁'},
+    {type:'resistor',x:220,y:260,label:'R₂'},
+    // Capacitor
+    {type:'capacitor',x:480,y:160,label:'C'},
+    // Inductor
+    {type:'inductor',x:640,y:160,label:'L'},
+    // LED
+    {type:'led',x:820,y:160},
+  ];
+
+  const wires=[
+    // Top path
+    {x1:80,y1:100,x2:190,y2:100},
+    {x1:60,y1:100,x2:60,y2:140},
+    {x1:250,y1:100,x2:430,y2:100},
+    {x1:430,y1:100,x2:430,y2:140},
+    {x1:430,y1:180,x2:430,y2:220},
+    {x1:430,y1:220,x2:550,y2:220},
+    // Bottom path
+    {x1:80,y1:220,x2:190,y2:220},
+    {x1:60,y1:180,x2:60,y2:220},
+    {x1:250,y1:220,x2:430,y2:220},
+    // Right paths
+    {x1:550,y1:100,x2:610,y2:100},
+    {x1:550,y1:220,x2:610,y2:220},
+    {x1:670,y1:100,x2:800,y2:100},
+    {x1:670,y1:220,x2:800,y2:220},
+    {x1:840,y1:100,x2:840,y2:140},
+    {x1:840,y1:180,x2:840,y2:220},
+  ];
+
+  let svgContent='';
+
+  // Defs & gradient
+  svgContent+=`<defs>
+    <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00aaff"/>
+    </linearGradient>
+    <filter id="glow-f"><feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+
+  // Wires
+  wires.forEach(w=>{
+    svgContent+=`<line x1="${w.x1}" y1="${w.y1}" x2="${w.x2}" y2="${w.y2}" stroke="rgba(0,255,136,0.25)" stroke-width="2"/>`;
+  });
+
+  // Battery
+  svgContent+=`
+    <rect x="42" y="140" width="36" height="40" rx="4" fill="#071a0f" stroke="#00ff88" stroke-width="1.5"/>
+    <line x1="50" y1="152" x2="70" y2="152" stroke="#00ff88" stroke-width="2"/>
+    <line x1="55" y1="162" x2="65" y2="162" stroke="#00aaff" stroke-width="1"/>
+    <text x="60" y="194" text-anchor="middle" fill="#7a9e8a" font-size="10" font-family="Segoe UI">V</text>`;
+
+  // Resistor R1 (top)
+  svgContent+=`
+    <rect x="190" y="88" width="60" height="24" rx="4" fill="#071a0f" stroke="#ffcc00" stroke-width="1.5"/>
+    <text x="220" y="104" text-anchor="middle" fill="#ffcc00" font-size="10" font-family="Segoe UI">R₁</text>
+    <text x="220" y="80" text-anchor="middle" fill="#7a9e8a" font-size="9" font-family="Segoe UI">100Ω</text>`;
+
+  // Resistor R2 (bottom)
+  svgContent+=`
+    <rect x="190" y="208" width="60" height="24" rx="4" fill="#071a0f" stroke="#ffcc00" stroke-width="1.5"/>
+    <text x="220" y="224" text-anchor="middle" fill="#ffcc00" font-size="10" font-family="Segoe UI">R₂</text>
+    <text x="220" y="244" text-anchor="middle" fill="#7a9e8a" font-size="9" font-family="Segoe UI">220Ω</text>`;
+
+  // Capacitor
+  svgContent+=`
+    <line x1="430" y1="140" x2="430" y2="153" stroke="#00aaff" stroke-width="2"/>
+    <line x1="410" y1="153" x2="450" y2="153" stroke="#00aaff" stroke-width="3"/>
+    <line x1="410" y1="163" x2="450" y2="163" stroke="#00aaff" stroke-width="3"/>
+    <line x1="430" y1="163" x2="430" y2="180" stroke="#00aaff" stroke-width="2"/>
+    <text x="460" y="162" fill="#00aaff" font-size="10" font-family="Segoe UI">C</text>
+    <text x="460" y="174" fill="#7a9e8a" font-size="9" font-family="Segoe UI">100µF</text>`;
+
+  // Also connect top/bottom rails
+  svgContent+=`
+    <line x1="430" y1="100" x2="430" y2="140" stroke="rgba(0,255,136,0.25)" stroke-width="2"/>`;
+
+  // Inductor
+  const Lx=610,Ly=160;
+  svgContent+=`<line x1="${Lx}" y1="${Ly}" x2="${Lx+12}" y2="${Ly}" stroke="#bf5af2" stroke-width="2"/>`;
+  for(let i=0;i<4;i++){
+    svgContent+=`<path d="M${Lx+12+i*14},${Ly} a7,7 0 0,1 14,0" fill="none" stroke="#bf5af2" stroke-width="2"/>`;
+  }
+  svgContent+=`<line x1="${Lx+68}" y1="${Ly}" x2="${Lx+80}" y2="${Ly}" stroke="#bf5af2" stroke-width="2"/>`;
+  svgContent+=`<text x="${Lx+40}" y="${Ly-12}" text-anchor="middle" fill="#bf5af2" font-size="10" font-family="Segoe UI">L 10mH</text>`;
+  // connect inductor to rails
+  svgContent+=`
+    <line x1="610" y1="100" x2="610" y2="160" stroke="rgba(0,255,136,0.25)" stroke-width="2"/>
+    <line x1="690" y1="160" x2="690" y2="100" stroke="rgba(0,255,136,0.25)" stroke-width="2"/>
+    <line x1="610" y1="220" x2="610" y2="160" stroke="rgba(0,255,136,0.1)" stroke-width="1" stroke-dasharray="4"/>
+    <line x1="690" y1="220" x2="690" y2="160" stroke="rgba(0,255,136,0.1)" stroke-width="1" stroke-dasharray="4"/>`;
+
+  // LED
+  svgContent+=`
+    <polygon points="800,148 800,172 822,160" fill="rgba(0,255,136,0.3)" stroke="#00ff88" stroke-width="1.5"/>
+    <line x1="822" y1="148" x2="822" y2="172" stroke="#00ff88" stroke-width="2"/>
+    <line x1="826" y1="152" x2="830" y2="148" stroke="#00ff88" stroke-width="1.5"/>
+    <line x1="826" y1="160" x2="832" y2="154" stroke="#00ff88" stroke-width="1.5"/>
+    <text x="818" y="188" text-anchor="middle" fill="#00ff88" font-size="10" font-family="Segoe UI">LED</text>`;
+
+  // Labels
+  const labelStyle='font-size:11px;font-family:Segoe UI,sans-serif;fill:rgba(148,163,184,0.6)';
+  svgContent+=`<text x="160" y="290" ${labelStyle}>Gerilim Bölücü</text>`;
+  svgContent+=`<text x="390" y="290" ${labelStyle}>RC Devre</text>`;
+  svgContent+=`<text x="590" y="290" ${labelStyle}>RL Yük</text>`;
+  svgContent+=`<text x="790" y="290" ${labelStyle}>Çıkış</text>`;
+
+  svg.innerHTML=svgContent;
+
+  // Animate electrons on wires
+  const svgNS='http://www.w3.org/2000/svg';
+  const paths=[
+    {d:'M 80,100 L 430,100',color:'#00ff88'},
+    {d:'M 430,220 L 80,220',color:'#ffcc00'},
+    {d:'M 430,100 L 800,100',color:'#00aaff'},
+    {d:'M 800,220 L 430,220',color:'#bf5af2'},
+    {d:'M 60,100 L 60,220',color:'#00ff88'},
+    {d:'M 840,100 L 840,220',color:'#00ff88'},
+  ];
+
+  paths.forEach(p=>{
+    const path=document.createElementNS(svgNS,'path');
+    path.setAttribute('d',p.d);path.setAttribute('fill','none');path.setAttribute('stroke','none');
+    svg.appendChild(path);
+    const len=path.getTotalLength()||200;
+
+    for(let i=0;i<2;i++){
+      const c=document.createElementNS(svgNS,'circle');
+      c.setAttribute('r','5');c.setAttribute('fill',p.color);
+      c.setAttribute('filter','url(#glow-f)');c.setAttribute('opacity','.85');
+      svg.appendChild(c);
+
+      const offset=i*len*.5;
+      let pos=offset;
+      (function animate(){
+        pos=(pos+2)%len;
+        const pt=path.getPointAtLength(pos);
+        c.setAttribute('cx',pt.x);c.setAttribute('cy',pt.y);
+        requestAnimationFrame(animate);
+      })();
+    }
+  });
+})();
+
+// ── FADE-UP OBSERVER ──
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// ── COUNTER ANIMATION ──
+function animCounter(el){
+  const target=+el.dataset.target;
+  let cur=0;const step=Math.max(1,Math.floor(target/60));
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=cur.toLocaleString('tr-TR');
+    if(cur>=target)clearInterval(t);
+  },30);
+}
+const cObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.counter').forEach(c=>animCounter(c));
+      cObs.unobserve(e.target);
+    }
+  });
+},{threshold:.5});
+const statsEl=document.getElementById('stats');
+if(statsEl)cObs.observe(statsEl);
+</script>
+</body>
+</html>

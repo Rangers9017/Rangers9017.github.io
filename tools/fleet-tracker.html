@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GFI — Global Fleet Intelligence</title>
+  <style>
+    :root {
+      --bg:       #050810;
+      --panel:    rgba(10,14,22,0.93);
+      --border:   #1a2640;
+      --cyan:     #00c8e8;
+      --cyan2:    #4cd9f0;
+      --pink:     #f72585;
+      --gold:     #ffd166;
+      --green:    #06d6a0;
+      --purple:   #7b2fff;
+      --txt:      #d8e8f5;
+      --txt2:     #4d6480;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:'Consolas','Courier New',monospace;}
+
+    /* ── CANVAS ── */
+    #c{display:block;width:100vw;height:100vh;position:fixed;top:0;left:0;}
+
+    /* ── TOPBAR ── */
+    #topbar{
+      position:fixed;top:0;left:0;right:0;height:52px;
+      background:var(--panel);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;z-index:200;backdrop-filter:blur(12px);
+    }
+    .logo{display:flex;align-items:center;gap:10px;}
+    .logo-hex{
+      width:34px;height:34px;border:2px solid var(--cyan);border-radius:5px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;color:var(--cyan);font-weight:bold;
+    }
+    .logo-name{font-size:15px;letter-spacing:4px;color:var(--txt);font-weight:700;}
+    .logo-sub{font-size:9px;color:var(--txt2);letter-spacing:3px;margin-top:1px;}
+    #utc{font-size:13px;color:var(--cyan2);letter-spacing:2px;}
+    .live{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--green);letter-spacing:1px;}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+    /* ── STATS BAR ── */
+    #statsbar{
+      position:fixed;top:52px;left:0;right:0;height:32px;
+      background:rgba(5,8,16,.9);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;padding:0 20px;gap:28px;z-index:199;
+      font-size:10px;letter-spacing:1px;
+    }
+    .si{display:flex;align-items:center;gap:7px;}
+    .sl{color:var(--txt2);}
+    .sv{color:var(--cyan2);font-weight:700;}
+    .sdiv{width:1px;height:18px;background:var(--border);}
+
+    /* ── LEFT PANEL ── */
+    #lp{
+      position:fixed;top:92px;left:14px;width:188px;
+      background:var(--panel);border:1px solid var(--border);border-radius:4px;
+      z-index:150;backdrop-filter:blur(12px);
+    }
+    .ph{padding:9px 13px;border-bottom:1px solid var(--border);font-size:9px;color:var(--txt2);letter-spacing:2px;}
+    .fb{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:9px 13px;cursor:pointer;font-size:11px;border-bottom:1px solid var(--border);
+      transition:background .15s;color:var(--txt2);
+    }
+    .fb:last-child{border-bottom:none;}
+    .fb:hover{background:rgba(0,200,232,.08);}
+    .fb.active{color:var(--cyan);}
+    .fc{
+      background:rgba(0,200,232,.15);color:var(--cyan);
+      padding:2px 7px;border-radius:9px;font-size:9px;
+    }
+    .fc.pink{background:rgba(247,37,133,.15);color:var(--pink);}
+    .fc.gold{background:rgba(255,209,102,.15);color:var(--gold);}
+
+    /* ── INFO PANEL ── */
+    #ip{
+      position:fixed;top:92px;right:14px;width:274px;
+      background:var(--panel);border:1px solid var(--border);border-radius:4px;
+      z-index:150;backdrop-filter:blur(12px);
+      display:none;
+    }
+    #ip.show{display:block;}
+    .ih{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+    .ics{font-size:20px;font-weight:700;letter-spacing:2px;color:var(--cyan);}
+    .inm{font-size:11px;color:var(--txt2);margin-top:2px;}
+    .ibadge{padding:3px 8px;border-radius:3px;font-size:9px;letter-spacing:1px;margin-bottom:4px;}
+    .ba{background:rgba(0,200,232,.15);color:var(--cyan2);border:1px solid var(--cyan2);}
+    .bs{background:rgba(247,37,133,.15);color:var(--pink);border:1px solid var(--pink);}
+    .bm{background:rgba(255,209,102,.15);color:var(--gold);border:1px solid var(--gold);}
+    .ib{padding:10px 14px;}
+    .ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(26,38,64,.5);font-size:11px;}
+    .ir:last-child{border-bottom:none;}
+    .ik{color:var(--txt2);letter-spacing:1px;}
+    .iv{color:var(--txt);text-align:right;max-width:155px;word-break:break-all;}
+    .iv.a{color:var(--cyan2);}
+    .iv.g{color:var(--green);}
+    .iv.p{color:var(--pink);}
+    .pcon{padding:10px 14px;border-top:1px solid var(--border);}
+    .plbl{display:flex;justify-content:space-between;font-size:9px;color:var(--txt2);letter-spacing:1px;margin-bottom:5px;}
+    .pbar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .pfill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:2px;transition:width .8s ease;}
+    #xip{cursor:pointer;color:var(--txt2);font-size:14px;padding:2px 5px;border-radius:3px;}
+    #xip:hover{background:rgba(255,255,255,.1);color:var(--txt);}
+
+    /* ── TOOLTIP ── */
+    #tt{
+      position:fixed;background:rgba(10,14,22,.97);
+      border:1px solid var(--cyan);border-radius:4px;
+      padding:5px 11px;font-size:11px;color:var(--txt);
+      pointer-events:none;z-index:500;display:none;
+      white-space:nowrap;letter-spacing:1px;
+    }
+
+    /* ── BOTTOM BAR ── */
+    #bot{
+      position:fixed;bottom:0;left:0;right:0;height:25px;
+      background:var(--panel);border-top:1px solid var(--border);
+      display:flex;align-items:center;padding:0 16px;
+      font-size:9px;color:var(--txt2);letter-spacing:1px;z-index:200;
+    }
+
+    /* ── SCANLINES ── */
+    #sl{
+      position:fixed;inset:0;pointer-events:none;z-index:10;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);
+    }
+
+    /* ── CORNERS ── */
+    .crn{position:fixed;width:18px;height:18px;pointer-events:none;z-index:180;}
+    .tl{top:92px;left:0;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);}
+    .tr{top:92px;right:0;border-top:2px solid var(--cyan);border-right:2px solid var(--cyan);}
+    .bl{bottom:25px;left:0;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan);}
+    .br{bottom:25px;right:0;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);}
+
+    /* ── LOADING ── */
+    #ld{
+      position:fixed;inset:0;background:var(--bg);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      z-index:9999;transition:opacity .6s ease;
+    }
+    #ld.out{opacity:0;pointer-events:none;}
+    .ltitle{font-size:28px;letter-spacing:10px;color:var(--cyan);margin-bottom:6px;}
+    .lsub{font-size:10px;color:var(--txt2);letter-spacing:4px;margin-bottom:28px;}
+    .lbwrap{width:280px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+    .lbar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--cyan2));animation:lp 2.2s ease forwards;}
+    @keyframes lp{0%{width:0;}100%{width:100%;}}
+    .ltxt{font-size:10px;color:var(--txt2);letter-spacing:2px;margin-top:14px;}
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="ld">
+  <div class="ltitle">GFI</div>
+  <div class="lsub">GLOBAL FLEET INTELLIGENCE</div>
+  <div class="lbwrap"><div class="lbar"></div></div>
+  <div class="ltxt" id="ltxt">INITIALIZING SYSTEMS...</div>
+</div>
+
+<!-- Scanlines -->
+<div id="sl"></div>
+
+<!-- Corners -->
+<div class="crn tl"></div><div class="crn tr"></div>
+<div class="crn bl"></div><div class="crn br"></div>
+
+<!-- Canvas -->
+<canvas id="c"></canvas>
+
+<!-- Topbar -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-hex">⬡</div>
+    <div><div class="logo-name">GFI</div><div class="logo-sub">GLOBAL FLEET INTELLIGENCE</div></div>
+  </div>
+  <div id="utc">00:00:00 UTC</div>
+  <div class="live"><div class="dot"></div>LIVE TRACKING ACTIVE</div>
+</div>
+
+<!-- Stats bar -->
+<div id="statsbar">
+  <div class="si"><span class="sl">AIRCRAFT</span><span class="sv" id="sac">0</span></div>
+  <div class="sdiv"></div>
+  <div class="si"><span class="sl">VESSELS</span><span class="sv" id="svc">0</span></div>
+  <div class="sdiv"></div>
+  <div class="si"><span class="sl">MILITARY</span><span class="sv" id="smc" style="color:var(--gold)">0</span></div>
+  <div class="sdiv"></div>
+  <div class="si"><span class="sl">TOTAL TRACKED</span><span class="sv" id="stc">0</span></div>
+  <div class="sdiv"></div>
+  <div class="si"><span class="sl">ACTIVE ROUTES</span><span class="sv" id="src">0</span></div>
+  <div class="sdiv"></div>
+  <div class="si"><span class="sl">ALERTS</span><span class="sv" id="sal" style="color:var(--pink)">0</span></div>
+</div>
+
+<!-- Left panel -->
+<div id="lp">
+  <div class="ph">FILTER BY TYPE</div>
+  <div class="fb active" data-f="all" onclick="setFilter('all')">
+    <span>ALL TARGETS</span><span class="fc" id="ca">0</span>
+  </div>
+  <div class="fb" data-f="aircraft" onclick="setFilter('aircraft')">
+    <span>✈ AIRCRAFT</span><span class="fc" id="cac">0</span>
+  </div>
+  <div class="fb" data-f="ship" onclick="setFilter('ship')">
+    <span>⛵ VESSELS</span><span class="fc pink" id="csc">0</span>
+  </div>
+  <div class="fb" data-f="military" onclick="setFilter('military')">
+    <span>⚓ MILITARY</span><span class="fc gold" id="cmc">0</span>
+  </div>
+  <div class="fb" onclick="toggleRoutes()">
+    <span>ROUTES</span><span id="rtog" style="font-size:9px;color:var(--green)">ON</span>
+  </div>
+  <div class="fb" onclick="toggleGrid()">
+    <span>GRID</span><span id="gtog" style="font-size:9px;color:var(--green)">ON</span>
+  </div>
+</div>
+
+<!-- Info panel -->
+<div id="ip">
+  <div class="ih">
+    <div>
+      <div class="ics" id="ics">---</div>
+      <div class="inm" id="inm">---</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+      <span id="xip" onclick="closePanel()">✕</span>
+      <span class="ibadge ba" id="ibadge">---</span>
+    </div>
+  </div>
+  <div class="ib" id="ib"></div>
+  <div class="pcon">
+    <div class="plbl">
+      <span id="porg">---</span>
+      <span id="ppct">0%</span>
+      <span id="pdst">---</span>
+    </div>
+    <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="tt"></div>
+
+<!-- Bottom bar -->
+<div id="bot">GFI v3.1.0 &nbsp;|&nbsp; WGS84 &nbsp;|&nbsp; DRAG: ROTATE &nbsp;|&nbsp; SCROLL: ZOOM &nbsp;|&nbsp; CLICK VESSEL FOR DETAILS &nbsp;|&nbsp; DOUBLE-CLICK: RESET VIEW</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.163.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.163.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ──────────────────────────────────────────
+//  VESSEL DATABASE
+// ──────────────────────────────────────────
+const DB = [
+  // ── AIRCRAFT ──────────────────────────────────────────────────────────────
+  { id:'AA101',  cs:'AAL101',  type:'aircraft', model:'Boeing 777-300ER',   org:'American Airlines',
+    o:{n:'JFK',f:'New York JFK',         lat:40.64, lon:-73.78},
+    d:{n:'LHR',f:'London Heathrow',       lat:51.47, lon:-0.46},
+    alt:35000, spd:521, hdg:48,  status:'EN ROUTE', progress:.33, ps:2.2e-5, col:0x00c8e8 },
+
+  { id:'EK203',  cs:'UAE203',  type:'aircraft', model:'Airbus A380-800',    org:'Emirates',
+    o:{n:'DXB',f:'Dubai International',   lat:25.25, lon:55.36},
+    d:{n:'LAX',f:'Los Angeles Intl',      lat:33.94, lon:-118.41},
+    alt:41000, spd:489, hdg:22,  status:'EN ROUTE', progress:.55, ps:1.7e-5, col:0x00c8e8 },
+
+  { id:'SQ021',  cs:'SIA021',  type:'aircraft', model:'Boeing 787-10',      org:'Singapore Airlines',
+    o:{n:'SIN',f:'Singapore Changi',      lat:1.36,  lon:103.99},
+    d:{n:'EWR',f:'Newark Liberty',        lat:40.69, lon:-74.17},
+    alt:39000, spd:498, hdg:15,  status:'EN ROUTE', progress:.41, ps:1.5e-5, col:0x00c8e8 },
+
+  { id:'BA175',  cs:'BAW175',  type:'aircraft', model:'Boeing 747-400',     org:'British Airways',
+    o:{n:'LHR',f:'London Heathrow',       lat:51.47, lon:-0.46},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:37000, spd:512, hdg:280, status:'EN ROUTE', progress:.6,  ps:2.1e-5, col:0x00c8e8 },
+
+  { id:'LH441',  cs:'DLH441',  type:'aircraft', model:'Airbus A340-600',    org:'Lufthansa',
+    o:{n:'FRA',f:'Frankfurt Airport',     lat:50.03, lon:8.57},
+    d:{n:'EWR',f:'Newark Liberty',        lat:40.69, lon:-74.17},
+    alt:38000, spd:508, hdg:300, status:'EN ROUTE', progress:.24, ps:1.9e-5, col:0x00c8e8 },
+
+  { id:'AF011',  cs:'AFR011',  type:'aircraft', model:'Boeing 777-200ER',   org:'Air France',
+    o:{n:'CDG',f:'Paris Charles de Gaulle',lat:49.01,lon:2.55},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:36000, spd:515, hdg:295, status:'EN ROUTE', progress:.68, ps:2.0e-5, col:0x00c8e8 },
+
+  { id:'QR777',  cs:'QTR777',  type:'aircraft', model:'Airbus A350-1000',   org:'Qatar Airways',
+    o:{n:'DOH',f:'Hamad International',   lat:25.27, lon:51.61},
+    d:{n:'LAX',f:'Los Angeles Intl',      lat:33.94, lon:-118.41},
+    alt:41000, spd:495, hdg:30,  status:'EN ROUTE', progress:.46, ps:1.6e-5, col:0x00c8e8 },
+
+  { id:'CX831',  cs:'CPA831',  type:'aircraft', model:'Boeing 777-300',     org:'Cathay Pacific',
+    o:{n:'HKG',f:'Hong Kong Intl',        lat:22.31, lon:113.91},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:40000, spd:502, hdg:35,  status:'EN ROUTE', progress:.29, ps:1.5e-5, col:0x00c8e8 },
+
+  { id:'NH007',  cs:'ANA007',  type:'aircraft', model:'Boeing 777-300ER',   org:'All Nippon Airways',
+    o:{n:'NRT',f:'Tokyo Narita',          lat:35.76, lon:140.39},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:39000, spd:506, hdg:40,  status:'EN ROUTE', progress:.5,  ps:1.4e-5, col:0x00c8e8 },
+
+  { id:'QF011',  cs:'QFA011',  type:'aircraft', model:'Airbus A380-800',    org:'Qantas',
+    o:{n:'SYD',f:'Sydney Airport',        lat:-33.94,lon:151.18},
+    d:{n:'LAX',f:'Los Angeles Intl',      lat:33.94, lon:-118.41},
+    alt:43000, spd:487, hdg:55,  status:'EN ROUTE', progress:.64, ps:1.8e-5, col:0x00c8e8 },
+
+  { id:'TK001',  cs:'THY001',  type:'aircraft', model:'Boeing 777-300ER',   org:'Turkish Airlines',
+    o:{n:'IST',f:'Istanbul Airport',      lat:41.27, lon:28.73},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:37000, spd:510, hdg:300, status:'EN ROUTE', progress:.54, ps:1.8e-5, col:0x00c8e8 },
+
+  { id:'AC033',  cs:'ACA033',  type:'aircraft', model:'Boeing 787-9',       org:'Air Canada',
+    o:{n:'YYZ',f:'Toronto Pearson',       lat:43.68, lon:-79.63},
+    d:{n:'LHR',f:'London Heathrow',       lat:51.47, lon:-0.46},
+    alt:38000, spd:503, hdg:55,  status:'EN ROUTE', progress:.43, ps:2.1e-5, col:0x00c8e8 },
+
+  { id:'MH122',  cs:'MAS122',  type:'aircraft', model:'Airbus A350-900',    org:'Malaysia Airlines',
+    o:{n:'KUL',f:'Kuala Lumpur Intl',     lat:2.74,  lon:101.70},
+    d:{n:'LHR',f:'London Heathrow',       lat:51.47, lon:-0.46},
+    alt:40000, spd:491, hdg:315, status:'EN ROUTE', progress:.34, ps:1.5e-5, col:0x00c8e8 },
+
+  { id:'DL001',  cs:'DAL001',  type:'aircraft', model:'Airbus A330-300',    org:'Delta Air Lines',
+    o:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    d:{n:'GRU',f:'São Paulo Guarulhos',   lat:-23.43,lon:-46.47},
+    alt:36000, spd:498, hdg:175, status:'EN ROUTE', progress:.51, ps:1.9e-5, col:0x00c8e8 },
+
+  { id:'IB627',  cs:'IBE627',  type:'aircraft', model:'Airbus A350-900',    org:'Iberia',
+    o:{n:'MAD',f:'Madrid Barajas',        lat:40.47, lon:-3.57},
+    d:{n:'EZE',f:'Buenos Aires Ezeiza',   lat:-34.81,lon:-58.53},
+    alt:39000, spd:493, hdg:210, status:'EN ROUTE', progress:.6,  ps:1.7e-5, col:0x00c8e8 },
+
+  { id:'ET509',  cs:'ETH509',  type:'aircraft', model:'Boeing 787-8',       org:'Ethiopian Airlines',
+    o:{n:'ADD',f:'Addis Ababa Bole',      lat:8.98,  lon:38.80},
+    d:{n:'PEK',f:'Beijing Capital',       lat:40.08, lon:116.58},
+    alt:37000, spd:485, hdg:50,  status:'EN ROUTE', progress:.39, ps:1.7e-5, col:0x00c8e8 },
+
+  { id:'KE001',  cs:'KAL001',  type:'aircraft', model:'Boeing 747-8',       org:'Korean Air',
+    o:{n:'ICN',f:'Seoul Incheon',         lat:37.46, lon:126.44},
+    d:{n:'JFK',f:'New York JFK',          lat:40.64, lon:-73.78},
+    alt:41000, spd:509, hdg:42,  status:'EN ROUTE', progress:.28, ps:1.4e-5, col:0x00c8e8 },
+
+  { id:'UA901',  cs:'UAL901',  type:'aircraft', model:'Boeing 787-9',       org:'United Airlines',
+    o:{n:'SFO',f:'San Francisco Intl',    lat:37.62, lon:-122.38},
+    d:{n:'NRT',f:'Tokyo Narita',          lat:35.76, lon:140.39},
+    alt:38000, spd:497, hdg:310, status:'EN ROUTE', progress:.47, ps:1.6e-5, col:0x00c8e8 },
+
+  // ── SHIPS ─────────────────────────────────────────────────────────────────
+  { id:'MSCAUR', cs:'MSC AURORA',         type:'ship', stype:'Container Ship',  org:'MSC Mediterranean Shipping',
+    o:{n:'RTM',f:'Rotterdam',             lat:51.90, lon:4.48},
+    d:{n:'SGP',f:'Singapore',             lat:1.29,  lon:103.85},
+    flag:'🇵🇦 Panama', mmsi:'229312456', spd:18.4, hdg:145, status:'UNDERWAY',
+    cargo:'General Container', progress:.31, ps:5.5e-6, col:0xf72585 },
+
+  { id:'EVGVN',  cs:'EVER GIVEN',         type:'ship', stype:'Container Ship',  org:'Evergreen Marine Corp',
+    o:{n:'YTN',f:'Yantian Port',          lat:22.57, lon:114.24},
+    d:{n:'RTM',f:'Rotterdam',             lat:51.90, lon:4.48},
+    flag:'🇵🇦 Panama', mmsi:'353136000', spd:14.2, hdg:285, status:'UNDERWAY',
+    cargo:'Container',         progress:.56, ps:5.0e-6, col:0xf72585 },
+
+  { id:'MSKMC',  cs:'MAERSK KIMI',        type:'ship', stype:'Container Ship',  org:'Maersk Line',
+    o:{n:'HKG',f:'Hong Kong',             lat:22.31, lon:114.20},
+    d:{n:'LAX',f:'Los Angeles',           lat:33.73, lon:-118.26},
+    flag:'🇩🇰 Denmark',mmsi:'219021000', spd:22.1, hdg:52,  status:'UNDERWAY',
+    cargo:'Electronics',       progress:.45, ps:5.8e-6, col:0xf72585 },
+
+  { id:'NJLNK',  cs:'NORDIC JENNIFER',    type:'ship', stype:'LNG Tanker',       org:'Nordic Tankers',
+    o:{n:'SBP',f:'Sabine Pass LNG',       lat:29.73, lon:-93.87},
+    d:{n:'RTM',f:'Rotterdam',             lat:51.90, lon:4.48},
+    flag:'🇳🇴 Norway', mmsi:'257456000', spd:16.2, hdg:60,  status:'UNDERWAY',
+    cargo:'Liquefied Natural Gas',progress:.49,ps:5.6e-6, col:0xf72585 },
+
+  { id:'ALBRM',  cs:'ALBATROSS SUMMIT',   type:'ship', stype:'Bulk Carrier',     org:'Pacific Basin',
+    o:{n:'NWC',f:'Newcastle NSW',         lat:-32.93,lon:151.79},
+    d:{n:'QDO',f:'Qingdao',              lat:36.07, lon:120.33},
+    flag:'🇲🇭 Marshall Islands',mmsi:'538004567',spd:12.8,hdg:325,status:'UNDERWAY',
+    cargo:'Coal',              progress:.54, ps:5.5e-6, col:0xf72585 },
+
+  { id:'GLXYS',  cs:'GALAXY STAR',        type:'ship', stype:'Container Ship',  org:'COSCO Shipping',
+    o:{n:'SHA',f:'Shanghai',              lat:31.23, lon:121.47},
+    d:{n:'HAM',f:'Hamburg',               lat:53.55, lon:9.99},
+    flag:'🇨🇳 China',  mmsi:'413234567', spd:19.3, hdg:315, status:'UNDERWAY',
+    cargo:'Consumer Goods',    progress:.26, ps:4.9e-6, col:0xf72585 },
+
+  { id:'VSTIT',  cs:'VALIANT TITAN',      type:'ship', stype:'Oil Tanker',       org:'Vistara Shipping',
+    o:{n:'RAS',f:'Ras Tanura',            lat:26.64, lon:50.16},
+    d:{n:'YKH',f:'Yokohama',              lat:35.44, lon:139.64},
+    flag:'🇱🇷 Liberia',mmsi:'636019234', spd:14.5, hdg:75,  status:'UNDERWAY',
+    cargo:'Crude Oil',         progress:.41, ps:5.7e-6, col:0xf72585 },
+
+  { id:'POLRX',  cs:'POLAR EXPLORER',     type:'ship', stype:'Research Vessel',  org:'Arctic Marine Institute',
+    o:{n:'MUR',f:'Murmansk',              lat:68.97, lon:33.08},
+    d:{n:'PEV',f:'Pevek',                 lat:69.70, lon:170.32},
+    flag:'🇷🇺 Russia', mmsi:'273456789', spd:10.2, hdg:85,  status:'UNDERWAY',
+    cargo:'Scientific Equipment',progress:.36,ps:7.5e-6,col:0xf72585 },
+
+  { id:'SCTNW',  cs:'SCOTIAN WIND',       type:'ship', stype:'Car Carrier',      org:'Höegh Autoliners',
+    o:{n:'YKH',f:'Yokohama',              lat:35.44, lon:139.64},
+    d:{n:'BRE',f:'Bremerhaven',           lat:53.54, lon:8.57},
+    flag:'🇳🇴 Norway', mmsi:'257891234', spd:17.5, hdg:330, status:'UNDERWAY',
+    cargo:'Automobiles',       progress:.44, ps:4.9e-6, col:0xf72585 },
+
+  { id:'CGMMP',  cs:'CMA CGM MARCO POLO', type:'ship', stype:'ULCV Container',   org:'CMA CGM',
+    o:{n:'PRS',f:'Port Said',             lat:31.26, lon:32.30},
+    d:{n:'AMS',f:'Amsterdam',             lat:52.37, lon:4.90},
+    flag:'🇫🇷 France', mmsi:'228358700', spd:16.8, hdg:335, status:'UNDERWAY',
+    cargo:'Mixed Container',   progress:.34, ps:6.3e-6, col:0xf72585 },
+
+  // ── MILITARY ──────────────────────────────────────────────────────────────
+  { id:'CVN78',  cs:'USS GERALD R. FORD', type:'military', stype:'Aircraft Carrier', org:'United States Navy',
+    o:{n:'NFK',f:'Norfolk Naval Station', lat:36.93, lon:-76.31},
+    d:{n:'MED',f:'Mediterranean Sea',     lat:36.0,  lon:18.0},
+    flag:'🇺🇸 United States', mmsi:'NAVY-CVN78', spd:28.0, hdg:75, status:'DEPLOYED',
+    cargo:'Strike Group Operations', progress:.58, ps:6.5e-6, col:0xffd166 },
+
+  { id:'DDG56',  cs:'USS JOHN S. McCAIN', type:'military', stype:'Arleigh Burke Destroyer', org:'United States Navy',
+    o:{n:'YKH',f:'Yokosuka Naval Base',   lat:35.28, lon:139.66},
+    d:{n:'SCS',f:'South China Sea',       lat:14.0,  lon:116.0},
+    flag:'🇺🇸 United States', mmsi:'NAVY-DDG56', spd:32.0, hdg:195, status:'PATROL',
+    cargo:'Freedom of Navigation',progress:.42,ps:7.5e-6, col:0xffd166 },
+
+  { id:'B2101',  cs:'SPIRIT 101',         type:'military', model:'B-2 Spirit Stealth Bomber', org:'USAF 509th Bomb Wing',
+    o:{n:'WMS',f:'Whiteman AFB Missouri', lat:38.73, lon:-93.55},
+    d:{n:'DGO',f:'Diego Garcia',          lat:-7.32, lon:72.42},
+    alt:50000, spd:560, hdg:220, status:'CLASSIFIED', progress:.37, ps:2.4e-5, col:0xffd166 },
+];
+
+// ──────────────────────────────────────────
+//  THREE.JS SETUP
+// ──────────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.01, 200);
+camera.position.set(0, 0, 2.85);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 1.25;
+controls.maxDistance = 7;
+controls.rotateSpeed = 0.45;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.35;
+
+controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+canvas.addEventListener('dblclick', () => {
+  controls.autoRotate = true;
+  controls.reset();
+});
+
+// Lighting
+scene.add(new THREE.AmbientLight(0x334455, 1.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+sun.position.set(5, 3, 5);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x2244aa, 0.25);
+fill.position.set(-5,-3,-5);
+scene.add(fill);
+
+// ── EARTH ──────────────────────────────────
+const R = 1.0;
+const earthGeo = new THREE.SphereGeometry(R, 72, 72);
+const earthMat = new THREE.MeshPhongMaterial({ color:0x1a3a5c, specular:0x111133, shininess:22 });
+const earth = new THREE.Mesh(earthGeo, earthMat);
+scene.add(earth);
+
+const tl = new THREE.TextureLoader();
+tl.load('https://unpkg.com/three-globe@2.30.0/example/img/earth-day.jpg',
+  tx => { earthMat.map = tx; earthMat.needsUpdate = true; });
+tl.load('https://unpkg.com/three-globe@2.30.0/example/img/earth-topology.png',
+  tx => { earthMat.bumpMap = tx; earthMat.bumpScale = 0.008; earthMat.needsUpdate = true; });
+
+// Atmosphere glow
+const atmoMat = new THREE.ShaderMaterial({
+  vertexShader:`varying vec3 vN; void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`varying vec3 vN; void main(){float i=pow(0.58-dot(vN,vec3(0,0,1)),2.1);gl_FragColor=vec4(0.08,0.5,1.,1.)*i;}`,
+  blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent: true,
+});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.1, 40, 40), atmoMat));
+
+// Night-side cloud shimmer layer
+const cloudMat = new THREE.MeshPhongMaterial({ color:0x223355, transparent:true, opacity:.12, depthWrite:false });
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.005, 48, 48), cloudMat));
+
+// ── STARS ──────────────────────────────────
+const starPos = new Float32Array(6000*3);
+for(let i=0;i<starPos.length;i++) starPos[i]=(Math.random()-.5)*90;
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos,3));
+scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff,size:.04,transparent:true,opacity:.75})));
+
+// ── GRID ──────────────────────────────────
+const gridGroup = new THREE.Group();
+const gMat = new THREE.LineBasicMaterial({color:0x004466, transparent:true, opacity:.28});
+for(let lat=-80;lat<=80;lat+=20){
+  const pts=[];
+  for(let ln=-180;ln<=180;ln+=3) pts.push(ll2v(lat,ln,R+.002));
+  gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gMat));
+}
+for(let lon=-180;lon<=180;lon+=20){
+  const pts=[];
+  for(let lt=-90;lt<=90;lt+=3) pts.push(ll2v(lt,lon,R+.002));
+  gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gMat));
+}
+scene.add(gridGroup);
+
+// ── UTILS ──────────────────────────────────
+function ll2v(lat, lon, r){
+  const phi = (90-lat)*Math.PI/180;
+  const th  = (lon+180)*Math.PI/180;
+  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th));
+}
+
+function gcLerp(la1,lo1,la2,lo2,t){
+  const d2r=Math.PI/180;
+  const p1=la1*d2r, p2=la2*d2r, l1=lo1*d2r, l2=lo2*d2r;
+  const d=Math.acos(Math.max(-1,Math.min(1,Math.sin(p1)*Math.sin(p2)+Math.cos(p1)*Math.cos(p2)*Math.cos(l2-l1))));
+  if(d<1e-4) return {lat:la2,lon:lo2};
+  const A=Math.sin((1-t)*d)/Math.sin(d), B=Math.sin(t*d)/Math.sin(d);
+  const x=A*Math.cos(p1)*Math.cos(l1)+B*Math.cos(p2)*Math.cos(l2);
+  const y=A*Math.cos(p1)*Math.sin(l1)+B*Math.cos(p2)*Math.sin(l2);
+  const z=A*Math.sin(p1)+B*Math.sin(p2);
+  return {lat:Math.atan2(z,Math.sqrt(x*x+y*y))/d2r, lon:Math.atan2(y,x)/d2r};
+}
+
+// ── VESSEL ICON TEXTURES ───────────────────
+function mkTex(type, col, sel){
+  const cv=document.createElement('canvas'); cv.width=cv.height=72;
+  const cx=cv.getContext('2d');
+  const hx='#'+col.toString(16).padStart(6,'0');
+
+  cx.clearRect(0,0,72,72);
+  if(sel){ cx.shadowColor='#fff'; cx.shadowBlur=18; }
+  cx.fillStyle=hx; cx.strokeStyle=sel?'#fff':hx;
+
+  cx.save(); cx.translate(36,36);
+
+  if(type==='aircraft'||type==='military'&&DB.find(v=>v.id===type)?.model?.includes('B-2')){
+    // Airplane silhouette
+    cx.beginPath();
+    cx.moveTo(0,-18); cx.lineTo(3,-4); cx.lineTo(3,9); cx.lineTo(0,13); cx.lineTo(-3,9); cx.lineTo(-3,-4); cx.closePath(); cx.fill();
+    cx.beginPath();
+    cx.moveTo(-3,1); cx.lineTo(-18,9); cx.lineTo(-14,9); cx.lineTo(0,3); cx.lineTo(14,9); cx.lineTo(18,9); cx.lineTo(3,1); cx.closePath(); cx.fill();
+    cx.beginPath();
+    cx.moveTo(-2,10); cx.lineTo(-9,16); cx.lineTo(-7,16); cx.lineTo(0,13); cx.lineTo(7,16); cx.lineTo(9,16); cx.lineTo(2,10); cx.closePath(); cx.fill();
+  } else if(type==='military'){
+    // Warship
+    cx.beginPath(); cx.moveTo(0,-20); cx.lineTo(8,-6); cx.lineTo(9,10); cx.lineTo(5,18); cx.lineTo(-5,18); cx.lineTo(-9,10); cx.lineTo(-8,-6); cx.closePath(); cx.fill();
+    // Superstructure
+    cx.fillRect(-5,-14,10,10);
+    // Gun turret
+    cx.beginPath(); cx.arc(0,-6,4,0,Math.PI*2); cx.fill();
+    cx.fillRect(-1,-16,2,12);
+  } else {
+    // Cargo ship
+    cx.beginPath(); cx.moveTo(0,-18); cx.lineTo(8,-7); cx.lineTo(9,10); cx.lineTo(5,16); cx.lineTo(-5,16); cx.lineTo(-9,10); cx.lineTo(-8,-7); cx.closePath(); cx.fill();
+    cx.fillRect(-5,-12,10,9);
+  }
+  cx.restore();
+
+  if(sel){
+    cx.strokeStyle='rgba(255,255,255,.85)'; cx.lineWidth=1.5; cx.setLineDash([5,4]);
+    cx.beginPath(); cx.arc(36,36,28,0,Math.PI*2); cx.stroke(); cx.setLineDash([]);
+  }
+  return new THREE.CanvasTexture(cv);
+}
+
+// ── BUILD SPRITES & ROUTES ─────────────────
+const sprites=[], routeObjs=[];
+let showRoutes=true, showGrid=true;
+
+DB.forEach(v=>{
+  const tex=mkTex(v.type,v.col,false);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,sizeAttenuation:true,depthTest:false}));
+  const sz=v.type==='military'?.072:v.type==='aircraft'?.058:.053;
+  sp.scale.set(sz,sz,1);
+  sp.userData.idx=DB.indexOf(v);
+  scene.add(sp);
+  sprites.push({sp,v});
+
+  // Route arc
+  const rPts=[];
+  for(let i=0;i<=120;i++){
+    const t=i/120;
+    const p=gcLerp(v.o.lat,v.o.lon,v.d.lat,v.d.lon,t);
+    const base=v.type==='aircraft'||v.type==='military'?R+.016:R+.004;
+    const arc=v.type==='aircraft'||v.type==='military'? Math.sin(Math.PI*t)*.06:0;
+    rPts.push(ll2v(p.lat,p.lon,base+arc));
+  }
+  const rCol=v.type==='aircraft'?0x004488:v.type==='military'?0x886600:0x660022;
+  const rLine=new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(rPts),
+    new THREE.LineBasicMaterial({color:rCol,transparent:true,opacity:.3,depthTest:false})
+  );
+  scene.add(rLine);
+  routeObjs.push(rLine);
+});
+
+// ── RAYCASTING ────────────────────────────
+const rc=new THREE.Raycaster(); rc.params.Sprite={threshold:.04};
+const mouse=new THREE.Vector2();
+let selV=null;
+
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  rc.setFromCamera(mouse,camera);
+  const hits=rc.intersectObjects(sprites.map(s=>s.sp));
+  if(hits.length){
+    const v=DB[hits[0].object.userData.idx];
+    selV=v; showInfo(v); refreshIcons();
+  } else { closePanel(); }
+});
+
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  rc.setFromCamera(mouse,camera);
+  const hits=rc.intersectObjects(sprites.map(s=>s.sp));
+  const tt=document.getElementById('tt');
+  if(hits.length){
+    const v=DB[hits[0].object.userData.idx];
+    tt.style.display='block';
+    tt.style.left=(e.clientX+14)+'px';
+    tt.style.top=(e.clientY-30)+'px';
+    const icon=v.type==='aircraft'?'✈':v.type==='military'?'⚓':'⛵';
+    tt.textContent=`${icon} ${v.cs}`;
+    canvas.style.cursor='pointer';
+  } else {
+    tt.style.display='none';
+    canvas.style.cursor='default';
+  }
+});
+
+// ── INFO PANEL ────────────────────────────
+function showInfo(v){
+  document.getElementById('ip').classList.add('show');
+  document.getElementById('ics').textContent=v.cs;
+  document.getElementById('inm').textContent=v.org;
+  const badge=document.getElementById('ibadge');
+  if(v.type==='aircraft'){ badge.textContent='AIRCRAFT'; badge.className='ibadge ba'; }
+  else if(v.type==='military'){ badge.textContent='MILITARY'; badge.className='ibadge bm'; }
+  else { badge.textContent='VESSEL'; badge.className='ibadge bs'; }
+
+  let rows='';
+  if(v.type==='aircraft'){
+    rows=`
+      <div class="ir"><span class="ik">MODEL</span><span class="iv">${v.model}</span></div>
+      <div class="ir"><span class="ik">AIRLINE</span><span class="iv">${v.org}</span></div>
+      <div class="ir"><span class="ik">ALTITUDE</span><span class="iv a">${v.alt.toLocaleString()} FT</span></div>
+      <div class="ir"><span class="ik">SPEED</span><span class="iv a">${v.spd} KTS</span></div>
+      <div class="ir"><span class="ik">HEADING</span><span class="iv">${v.hdg}°</span></div>
+      <div class="ir"><span class="ik">STATUS</span><span class="iv g">${v.status}</span></div>`;
+  } else if(v.type==='military'){
+    rows=`
+      <div class="ir"><span class="ik">CLASS</span><span class="iv">${v.stype||v.model}</span></div>
+      <div class="ir"><span class="ik">UNIT</span><span class="iv">${v.org}</span></div>
+      <div class="ir"><span class="ik">FLAG</span><span class="iv">${v.flag}</span></div>
+      <div class="ir"><span class="ik">MMSI/ID</span><span class="iv">${v.mmsi||'—'}</span></div>
+      <div class="ir"><span class="ik">SPEED</span><span class="iv a">${v.spd} KTS</span></div>
+      <div class="ir"><span class="ik">MISSION</span><span class="iv" style="color:var(--gold)">${v.cargo||'CLASSIFIED'}</span></div>
+      <div class="ir"><span class="ik">STATUS</span><span class="iv" style="color:var(--gold)">${v.status}</span></div>`;
+  } else {
+    rows=`
+      <div class="ir"><span class="ik">TYPE</span><span class="iv">${v.stype}</span></div>
+      <div class="ir"><span class="ik">COMPANY</span><span class="iv">${v.org}</span></div>
+      <div class="ir"><span class="ik">FLAG</span><span class="iv">${v.flag}</span></div>
+      <div class="ir"><span class="ik">MMSI</span><span class="iv">${v.mmsi}</span></div>
+      <div class="ir"><span class="ik">SPEED</span><span class="iv a">${v.spd} KTS</span></div>
+      <div class="ir"><span class="ik">CARGO</span><span class="iv">${v.cargo}</span></div>
+      <div class="ir"><span class="ik">STATUS</span><span class="iv g">${v.status}</span></div>`;
+  }
+  document.getElementById('ib').innerHTML=rows;
+  updateProgress(v);
+}
+
+function updateProgress(v){
+  const pct=Math.round(v.progress*100);
+  document.getElementById('porg').textContent=v.o.n;
+  document.getElementById('pdst').textContent=v.d.n;
+  document.getElementById('ppct').textContent=pct+'%';
+  document.getElementById('pfill').style.width=pct+'%';
+}
+
+window.closePanel=function(){
+  document.getElementById('ip').classList.remove('show');
+  selV=null; refreshIcons();
+};
+
+function refreshIcons(){
+  sprites.forEach(({sp,v})=>{
+    const sel=selV&&selV.id===v.id;
+    sp.material.map=mkTex(v.type,v.col,sel);
+    sp.material.needsUpdate=true;
+    const sz=sel?.095:v.type==='military'?.072:v.type==='aircraft'?.058:.053;
+    sp.scale.set(sz,sz,1);
+  });
+}
+
+// ── FILTER ────────────────────────────────
+let curFilter='all';
+window.setFilter=function(f){
+  curFilter=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  const el=document.querySelector(`[data-f="${f}"]`);
+  if(el) el.classList.add('active');
+  sprites.forEach(({sp,v})=>{ sp.visible=f==='all'||v.type===f; });
+  routeObjs.forEach((r,i)=>{ r.visible=(f==='all'||DB[i].type===f)&&showRoutes; });
+};
+
+window.toggleRoutes=function(){
+  showRoutes=!showRoutes;
+  document.getElementById('rtog').textContent=showRoutes?'ON':'OFF';
+  document.getElementById('rtog').style.color=showRoutes?'var(--green)':'var(--txt2)';
+  routeObjs.forEach((r,i)=>{ r.visible=showRoutes&&(curFilter==='all'||DB[i].type===curFilter); });
+};
+
+window.toggleGrid=function(){
+  showGrid=!showGrid;
+  document.getElementById('gtog').textContent=showGrid?'ON':'OFF';
+  document.getElementById('gtog').style.color=showGrid?'var(--green)':'var(--txt2)';
+  gridGroup.visible=showGrid;
+};
+
+// ── STATS ────────────────────────────────
+function updateStats(){
+  const ac=DB.filter(v=>v.type==='aircraft').length;
+  const sc=DB.filter(v=>v.type==='ship').length;
+  const mc=DB.filter(v=>v.type==='military').length;
+  document.getElementById('sac').textContent=ac;
+  document.getElementById('svc').textContent=sc;
+  document.getElementById('smc').textContent=mc;
+  document.getElementById('stc').textContent=DB.length;
+  document.getElementById('src').textContent=DB.length;
+  document.getElementById('sal').textContent=Math.floor(Math.random()*4);
+  document.getElementById('ca').textContent=DB.length;
+  document.getElementById('cac').textContent=ac;
+  document.getElementById('csc').textContent=sc;
+  document.getElementById('cmc').textContent=mc;
+}
+updateStats();
+setInterval(()=>{ document.getElementById('sal').textContent=Math.floor(Math.random()*4); },8000);
+
+// ── CLOCK ────────────────────────────────
+function tick(){
+  const n=new Date();
+  const h=n.getUTCHours().toString().padStart(2,'0');
+  const m=n.getUTCMinutes().toString().padStart(2,'0');
+  const s=n.getUTCSeconds().toString().padStart(2,'0');
+  document.getElementById('utc').textContent=`${h}:${m}:${s} UTC`;
+}
+setInterval(tick,1000); tick();
+
+// ── ANIMATION ────────────────────────────
+const clk=new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clk.getDelta();
+  const t=clk.getElapsedTime();
+
+  sprites.forEach(({sp,v})=>{
+    v.progress=(v.progress+v.ps)%1;
+    const pos=gcLerp(v.o.lat,v.o.lon,v.d.lat,v.d.lon,v.progress);
+    const alt=v.type==='aircraft'||v.type==='military'&&v.alt?R+.018:R+.007;
+    sp.position.copy(ll2v(pos.lat,pos.lon,alt));
+
+    // Pulse selected
+    if(selV&&selV.id===v.id){
+      const p=.085+Math.sin(t*5)*.012;
+      sp.scale.set(p,p,1);
+      updateProgress(v);
+    }
+  });
+
+  controls.update();
+  renderer.render(scene,camera);
+}
+
+// ── RESIZE ───────────────────────────────
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+// ── LOADING SEQUENCE ─────────────────────
+const msgs=['LOADING SATELLITE FEED...','PARSING AIS TRANSPONDERS...','COMPUTING VESSEL ROUTES...','RENDERING GLOBE SURFACE...','SYNCHRONIZING POSITIONS...','SYSTEM ONLINE'];
+let mi=0;
+const ltxt=document.getElementById('ltxt');
+const ld=document.getElementById('ld');
+const iv=setInterval(()=>{
+  ltxt.textContent=msgs[mi++];
+  if(mi>=msgs.length){ clearInterval(iv); setTimeout(()=>{ ld.classList.add('out'); animate(); },400); }
+},340);
+</script>
+</body>
+</html>

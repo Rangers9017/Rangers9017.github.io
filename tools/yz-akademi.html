@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yapay Zeka Dünyası — Nasıl Çalışır & Kariyer Rehberi</title>
+<style>
+  :root {
+    --bg: #050a1a;
+    --surface: #0d1b3e;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --glow: 0 0 30px rgba(0,212,255,0.4);
+    --glow2: 0 0 30px rgba(124,58,237,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(5,10,26,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,212,255,0.15);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-size: 1.3rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo svg { width: 32px; height: 32px; }
+  nav ul { display: flex; gap: 2rem; list-style: none; }
+  nav a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+    font-weight: 500; transition: color .3s;
+  }
+  nav a:hover { color: var(--accent); }
+
+  /* ── SECTIONS ── */
+  section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 100px; padding: 6px 16px;
+    font-size: 0.8rem; font-weight: 600; color: var(--accent);
+    margin-bottom: 1.2rem; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 800; line-height: 1.15; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.6rem); font-weight: 700; line-height: 1.2; }
+  h3 { font-size: 1.2rem; font-weight: 600; }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .gradient-text2 {
+    background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .gradient-text3 {
+    background: linear-gradient(135deg, var(--accent4) 0%, #ef4444 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  p { color: var(--text-muted); line-height: 1.75; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh; padding-top: 8rem;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; position: relative; overflow: hidden;
+    max-width: 100%;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 20% 80%, rgba(0,212,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(16,185,129,0.08) 0%, transparent 60%);
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 860px; }
+  #hero h1 { margin-bottom: 1.5rem; }
+  #hero p { font-size: 1.1rem; max-width: 600px; margin: 0 auto 2.5rem; }
+
+  .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 14px 32px; border-radius: 12px; font-weight: 600;
+    font-size: 1rem; cursor: pointer; border: none; text-decoration: none;
+    transition: all .3s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; box-shadow: var(--glow);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
+  .btn-secondary {
+    background: transparent; color: var(--text);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Neural Net Canvas */
+  #neural-canvas {
+    width: 100%; max-width: 700px; height: 300px;
+    margin: 3rem auto 0; position: relative; z-index: 2;
+  }
+
+  /* Scroll indicator */
+  .scroll-hint {
+    margin-top: 3rem; animation: bounce 2s infinite;
+    color: var(--text-muted); font-size: 0.85rem;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ── STATS ── */
+  #stats {
+    padding: 3rem 2rem; max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1.5rem;
+  }
+  .stat-card {
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 1.8rem; text-align: center;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--glow); }
+  .stat-number { font-size: 2.4rem; font-weight: 800; display: block; }
+  .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── HOW IT WORKS ── */
+  #how { max-width: 100%; padding: 6rem 2rem; }
+  #how .inner { max-width: 1100px; margin: 0 auto; }
+
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .step-card {
+    background: var(--surface); border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem; position: relative; overflow: hidden;
+    transition: transform .3s, box-shadow .3s;
+    cursor: default;
+  }
+  .step-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), transparent);
+    opacity: 0; transition: opacity .3s;
+  }
+  .step-card:hover { transform: translateY(-6px); }
+  .step-card:hover::before { opacity: 1; }
+  .step-card:nth-child(2) { border-color: rgba(124,58,237,0.25); }
+  .step-card:nth-child(2):hover { box-shadow: var(--glow2); }
+  .step-card:nth-child(1):hover { box-shadow: var(--glow); }
+  .step-card:nth-child(3):hover { box-shadow: 0 0 30px rgba(16,185,129,0.3); }
+  .step-card:nth-child(4):hover { box-shadow: 0 0 30px rgba(245,158,11,0.3); }
+
+  .step-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin-bottom: 1.2rem;
+  }
+  .step-num {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+    background: rgba(255,255,255,0.05); border-radius: 8px;
+    padding: 3px 8px;
+  }
+  .step-card h3 { margin-bottom: 0.7rem; }
+  .step-card p { font-size: 0.9rem; }
+
+  /* ── NEURAL NETWORK VISUALIZER ── */
+  #visualizer { background: rgba(13,27,62,0.5); padding: 6rem 2rem; }
+  #visualizer .inner { max-width: 1100px; margin: 0 auto; }
+  #visualizer h2 { margin-bottom: 1rem; }
+  #visualizer > .inner > p { margin-bottom: 3rem; }
+
+  .viz-container {
+    background: var(--surface); border-radius: 24px;
+    border: 1px solid rgba(0,212,255,0.15);
+    padding: 2rem; overflow: hidden;
+  }
+  #nn-svg { width: 100%; height: 340px; }
+
+  .viz-legend {
+    display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: var(--text-muted);
+  }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Training animation */
+  .training-bar-container { margin-top: 2rem; }
+  .training-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .training-bar {
+    height: 8px; background: rgba(255,255,255,0.06);
+    border-radius: 100px; overflow: hidden;
+  }
+  .training-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%; transition: width 0.05s linear;
+  }
+
+  /* ── AI TYPES ── */
+  #ai-types { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .types-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .type-card {
+    background: var(--surface); border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem; transition: all .3s;
+  }
+  .type-card:hover { transform: translateY(-4px); }
+  .type-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .type-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+  }
+  .type-card ul { list-style: none; margin-top: 1rem; }
+  .type-card li {
+    padding: 6px 0; font-size: 0.875rem; color: var(--text-muted);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .type-card li::before { content: '→'; color: var(--accent); font-size: 0.75rem; }
+
+  /* ── CAREERS ── */
+  #careers { background: rgba(13,27,62,0.5); padding: 6rem 2rem; }
+  #careers .inner { max-width: 1100px; margin: 0 auto; }
+
+  .careers-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .career-card {
+    background: var(--bg); border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2rem; transition: all .3s; position: relative; overflow: hidden;
+  }
+  .career-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--stripe, var(--accent));
+    transform: scaleX(0); transform-origin: left; transition: transform .4s;
+  }
+  .career-card:hover::after { transform: scaleX(1); }
+  .career-card:hover { border-color: rgba(0,212,255,0.25); transform: translateY(-4px); }
+
+  .career-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+  .career-icon { font-size: 2rem; }
+  .salary-badge {
+    background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--accent3); border-radius: 8px;
+    padding: 4px 10px; font-size: 0.75rem; font-weight: 700;
+  }
+  .career-card h3 { margin-bottom: 0.5rem; }
+  .career-card > p { font-size: 0.875rem; margin-bottom: 1.2rem; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem; }
+  .skill-tag {
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent); border-radius: 6px;
+    padding: 3px 10px; font-size: 0.75rem; font-weight: 500;
+  }
+
+  .demand-bar { margin-top: 0.5rem; }
+  .demand-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;
+  }
+  .demand-track {
+    height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 100px; overflow: hidden;
+  }
+  .demand-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+  }
+
+  /* ── ROADMAP ── */
+  #roadmap { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .roadmap-line {
+    position: relative;
+    padding-left: 3rem; margin-top: 3rem;
+  }
+  .roadmap-line::before {
+    content: ''; position: absolute; left: 15px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+  }
+  .roadmap-item {
+    position: relative; margin-bottom: 2.5rem;
+    background: var(--surface); border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 1.5rem;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .roadmap-item:hover { transform: translateX(6px); box-shadow: var(--glow); }
+  .roadmap-dot {
+    position: absolute; left: -2.7rem; top: 1.5rem;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: var(--accent);
+  }
+  .roadmap-phase {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.4rem;
+  }
+  .roadmap-item h3 { margin-bottom: 0.5rem; }
+  .roadmap-item p { font-size: 0.875rem; }
+  .roadmap-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1rem; }
+  .roadmap-tag {
+    background: rgba(255,255,255,0.05); border-radius: 6px;
+    padding: 3px 10px; font-size: 0.75rem; color: var(--text-muted);
+  }
+
+  /* ── TOOLS ── */
+  #tools { background: rgba(13,27,62,0.5); padding: 6rem 2rem; }
+  #tools .inner { max-width: 1100px; margin: 0 auto; }
+  .tools-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem; margin-top: 3rem;
+  }
+  .tool-pill {
+    background: var(--bg); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 1.2rem; text-align: center;
+    transition: all .3s; cursor: default;
+  }
+  .tool-pill:hover {
+    border-color: var(--accent); transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0,212,255,0.2);
+  }
+  .tool-emoji { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+  .tool-name { font-size: 0.8rem; font-weight: 600; }
+  .tool-cat { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── CTA ── */
+  #cta {
+    padding: 8rem 2rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(124,58,237,0.15), transparent 70%);
+  }
+  #cta .inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+  #cta h2 { margin-bottom: 1rem; }
+  #cta p { margin-bottom: 2.5rem; font-size: 1.05rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem; text-align: center;
+    color: var(--text-muted); font-size: 0.85rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+  .fade-up:nth-child(2) { transition-delay: .1s; }
+  .fade-up:nth-child(3) { transition-delay: .2s; }
+  .fade-up:nth-child(4) { transition-delay: .3s; }
+  .fade-up:nth-child(5) { transition-delay: .4s; }
+  .fade-up:nth-child(6) { transition-delay: .5s; }
+
+  /* Particle canvas */
+  #particle-canvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* Progress bar top */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; z-index: 9999;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%; transition: width .1s;
+  }
+
+  /* Counter animation */
+  .counter { display: inline-block; }
+
+  @media (max-width: 640px) {
+    nav ul { display: none; }
+    #hero { padding-top: 6rem; }
+    .btn { padding: 12px 20px; font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Particle Background -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="url(#ng)" stroke-width="2"/>
+      <circle cx="16" cy="10" r="3" fill="#00d4ff"/>
+      <circle cx="10" cy="20" r="3" fill="#7c3aed"/>
+      <circle cx="22" cy="20" r="3" fill="#10b981"/>
+      <line x1="16" y1="13" x2="10" y2="17" stroke="#00d4ff" stroke-width="1.5" opacity="0.6"/>
+      <line x1="16" y1="13" x2="22" y2="17" stroke="#7c3aed" stroke-width="1.5" opacity="0.6"/>
+      <defs><linearGradient id="ng" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+    </svg>
+    YZ Akademi
+  </div>
+  <ul>
+    <li><a href="#how">Nasıl Çalışır</a></li>
+    <li><a href="#ai-types">YZ Türleri</a></li>
+    <li><a href="#careers">Kariyer</a></li>
+    <li><a href="#roadmap">Yol Haritası</a></li>
+    <li><a href="#tools">Araçlar</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="section-badge">
+      <span>🤖</span> Yapay Zeka Dünyasına Hoş Geldiniz
+    </div>
+    <h1>
+      <span class="gradient-text">Yapay Zeka</span><br>
+      Nasıl Çalışır &amp; Ne Kazandırır?
+    </h1>
+    <p>
+      Makine öğrenmesinden derin öğrenmeye, nöral ağlardan kariyer yollarına —
+      YZ'nin perde arkasını ve sizi bekleyen fırsatları keşfedin.
+    </p>
+    <div class="btn-group">
+      <a href="#how" class="btn btn-primary">Keşfetmeye Başla ↓</a>
+      <a href="#careers" class="btn btn-secondary">Kariyer Yolları</a>
+    </div>
+  </div>
+  <canvas id="neural-canvas"></canvas>
+  <div class="scroll-hint">
+    <span>Kaydırın</span>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 4v12M5 11l5 5 5-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stat-card fade-up">
+    <span class="stat-number gradient-text"><span class="counter" data-target="97">0</span>M+</span>
+    <div class="stat-label">YZ ile oluşturulan iş ilanı (2030 tahmini)</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number gradient-text2">$<span class="counter" data-target="150">0</span>K+</span>
+    <div class="stat-label">Ortalama YZ Mühendisi maaşı (ABD)</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number gradient-text3"><span class="counter" data-target="1800">0</span>B+</span>
+    <div class="stat-label">YZ piyasa büyüklüğü $ (2030)</div>
+  </div>
+  <div class="stat-card fade-up">
+    <span class="stat-number" style="color:var(--accent4)"><span class="counter" data-target="44">0</span>%</span>
+    <div class="stat-label">Yıllık büyüme oranı (CAGR)</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how">
+<div class="inner">
+  <div class="section-badge">⚙️ Çalışma Prensibi</div>
+  <h2>Yapay Zeka <span class="gradient-text">Nasıl Çalışır?</span></h2>
+  <p style="margin-top:.8rem;max-width:620px;">Bir YZ modeli dört temel aşamadan geçerek "zeka" kazanır. Bu süreç aylar sürebilir ve devasa hesaplama gücü gerektirir.</p>
+
+  <div class="steps-grid">
+    <div class="step-card fade-up">
+      <span class="step-num">01</span>
+      <div class="step-icon" style="background:rgba(0,212,255,0.1);">📦</div>
+      <h3>Veri Toplama</h3>
+      <p>Model, metin, görüntü, ses veya sayısal verilerden oluşan dev veri setleriyle beslenir. GPT-4 yaklaşık 1 trilyon token ile eğitilmiştir.</p>
+    </div>
+    <div class="step-card fade-up">
+      <span class="step-num">02</span>
+      <div class="step-icon" style="background:rgba(124,58,237,0.1);">🧠</div>
+      <h3>Model Eğitimi</h3>
+      <p>Nöral ağ, geri yayılım algoritmasıyla ağırlıklarını günceller. Her iterasyonda hata payı azalır, tahminler iyileşir.</p>
+    </div>
+    <div class="step-card fade-up">
+      <span class="step-num">03</span>
+      <div class="step-icon" style="background:rgba(16,185,129,0.1);">🔬</div>
+      <h3>Değerlendirme</h3>
+      <p>Test veri setiyle doğruluk ölçülür. Overfitting, underfitting gibi sorunlar tespit edilip giderilir. İnce ayar (fine-tuning) yapılır.</p>
+    </div>
+    <div class="step-card fade-up">
+      <span class="step-num">04</span>
+      <div class="step-icon" style="background:rgba(245,158,11,0.1);">🚀</div>
+      <h3>Deployment</h3>
+      <p>Model API veya doğrudan servis olarak kullanıma alınır. Gerçek dünya verileriyle izlenir ve sürekli güncellenir.</p>
+    </div>
+    <div class="step-card fade-up">
+      <span class="step-num">05</span>
+      <div class="step-icon" style="background:rgba(239,68,68,0.1);">⚡</div>
+      <h3>İnferans (Tahmin)</h3>
+      <p>Eğitilmiş model yeni girdiyi alır, milyonlarca matris çarpımı yaparak çıktı üretir. Bu işlem milisaniyeler içinde gerçekleşir.</p>
+    </div>
+    <div class="step-card fade-up">
+      <span class="step-num">06</span>
+      <div class="step-icon" style="background:rgba(6,182,212,0.1);">🔄</div>
+      <h3>Sürekli Öğrenme</h3>
+      <p>RLHF (İnsan Geri Bildirimiyle Pekiştirmeli Öğrenme) ile model, insan tercihlerine göre sürekli geliştirilir.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- NEURAL NETWORK VISUALIZER -->
+<div id="visualizer">
+<div class="inner">
+  <div class="section-badge">🔮 Görsel Simülasyon</div>
+  <h2>Nöral Ağ <span class="gradient-text">Canlı Simülasyonu</span></h2>
+  <p>Verilerin ağ katmanlarında nasıl ilerlediğini izleyin. Her düğüm bir nöronu, her çizgi bir bağlantı ağırlığını temsil eder.</p>
+
+  <div class="viz-container">
+    <svg id="nn-svg" viewBox="0 0 800 340"></svg>
+    <div class="viz-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>Giriş Katmanı</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Gizli Katman</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Çıkış Katmanı</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,0.8)"></div>Aktif Sinyal</div>
+    </div>
+    <div class="training-bar-container">
+      <div class="training-label"><span>Eğitim Süreci</span><span id="epoch-label">Epoch: 0/100</span></div>
+      <div class="training-bar"><div class="training-fill" id="training-fill"></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- AI TYPES -->
+<div id="ai-types">
+  <div class="section-badge">🗂️ YZ Kategorileri</div>
+  <h2>Yapay Zeka <span class="gradient-text2">Türleri</span></h2>
+  <p style="margin-top:.8rem;max-width:620px;">Yapay zeka tek bir teknoloji değildir. Farklı problem türleri için farklı yaklaşımlar geliştirilmiştir.</p>
+
+  <div class="types-grid">
+    <div class="type-card fade-up" style="border-color:rgba(0,212,255,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(0,212,255,0.1);">🧮</div>
+        <div><h3>Makine Öğrenmesi</h3><p style="font-size:.8rem;">Klasik ML algoritmaları</p></div>
+      </div>
+      <p style="font-size:.875rem;">Veriden örüntü öğrenir, insan tarafından özellik mühendisliği gerektirir.</p>
+      <ul>
+        <li>Regresyon & Sınıflandırma</li>
+        <li>Random Forest, XGBoost</li>
+        <li>SVM, K-Means</li>
+        <li>Anomali tespiti</li>
+        <li>Öneri sistemleri</li>
+      </ul>
+    </div>
+    <div class="type-card fade-up" style="border-color:rgba(124,58,237,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(124,58,237,0.1);">🧠</div>
+        <div><h3>Derin Öğrenme</h3><p style="font-size:.8rem;">Neural Networks</p></div>
+      </div>
+      <p style="font-size:.875rem;">Çok katmanlı nöral ağlar; görüntü, ses ve metin işlemede üstün.</p>
+      <ul>
+        <li>CNN — görüntü işleme</li>
+        <li>RNN/LSTM — zaman serisi</li>
+        <li>Transformer — NLP</li>
+        <li>GAN — içerik üretimi</li>
+        <li>Diffusion Models</li>
+      </ul>
+    </div>
+    <div class="type-card fade-up" style="border-color:rgba(16,185,129,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(16,185,129,0.1);">💬</div>
+        <div><h3>Büyük Dil Modelleri</h3><p style="font-size:.8rem;">LLM & Generative AI</p></div>
+      </div>
+      <p style="font-size:.875rem;">Milyarlarca parametre ile dil anlama ve üretme; ChatGPT, Claude, Gemini.</p>
+      <ul>
+        <li>Metin üretimi & özetleme</li>
+        <li>Kod yazma & debug</li>
+        <li>Soru-cevap sistemleri</li>
+        <li>Çeviri & analiz</li>
+        <li>Ajan sistemleri</li>
+      </ul>
+    </div>
+    <div class="type-card fade-up" style="border-color:rgba(245,158,11,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(245,158,11,0.1);">👁️</div>
+        <div><h3>Bilgisayarlı Görü</h3><p style="font-size:.8rem;">Computer Vision</p></div>
+      </div>
+      <p style="font-size:.875rem;">Görüntü ve video analizi; nesne tespiti, yüz tanıma, tıbbi görüntüleme.</p>
+      <ul>
+        <li>Nesne tespiti (YOLO)</li>
+        <li>Segmentasyon</li>
+        <li>Pose estimation</li>
+        <li>OCR & belge analizi</li>
+        <li>Otonom araçlar</li>
+      </ul>
+    </div>
+    <div class="type-card fade-up" style="border-color:rgba(239,68,68,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(239,68,68,0.1);">🎮</div>
+        <div><h3>Pekiştirmeli Öğrenme</h3><p style="font-size:.8rem;">Reinforcement Learning</p></div>
+      </div>
+      <p style="font-size:.875rem;">Deneme-yanılma yoluyla ödül maksimizasyonu; oyun, robotik, optimizasyon.</p>
+      <ul>
+        <li>AlphaGo / AlphaZero</li>
+        <li>Robot hareket kontrolü</li>
+        <li>Finans portföy yönetimi</li>
+        <li>RLHF (LLM ince ayarı)</li>
+        <li>Oyun yapay zekaları</li>
+      </ul>
+    </div>
+    <div class="type-card fade-up" style="border-color:rgba(6,182,212,0.2);">
+      <div class="type-header">
+        <div class="type-icon" style="background:rgba(6,182,212,0.1);">🎨</div>
+        <div><h3>Üretken YZ</h3><p style="font-size:.8rem;">Generative AI</p></div>
+      </div>
+      <p style="font-size:.875rem;">Görüntü, müzik, video ve kod üretimi; DALL-E, Stable Diffusion, Sora.</p>
+      <ul>
+        <li>Görüntü üretimi</li>
+        <li>Video sentezi</li>
+        <li>Müzik bestesi</li>
+        <li>3D model oluşturma</li>
+        <li>Ses klonlama</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CAREERS -->
+<div id="careers">
+<div class="inner">
+  <div class="section-badge">💼 Kariyer Rehberi</div>
+  <h2>YZ Alanında <span class="gradient-text3">Kariyer Yolları</span></h2>
+  <p style="margin-top:.8rem;max-width:650px;">Yapay zeka ekosistemi onlarca farklı uzmanlık alanı barındırır. İşte en yüksek talep gören ve en iyi ödenen pozisyonlar:</p>
+
+  <div class="careers-grid">
+
+    <div class="career-card fade-up" style="--stripe:var(--accent);">
+      <div class="career-top">
+        <span class="career-icon">⚙️</span>
+        <span class="salary-badge">$130K–$220K</span>
+      </div>
+      <h3>ML Engineer</h3>
+      <p>Makine öğrenmesi modellerini production ortamına taşır, ölçeklendirir ve optimize eder.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">TensorFlow</span>
+        <span class="skill-tag">PyTorch</span>
+        <span class="skill-tag">MLOps</span>
+        <span class="skill-tag">Docker</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>95%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:95%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#7c3aed;">
+      <div class="career-top">
+        <span class="career-icon">📊</span>
+        <span class="salary-badge">$110K–$190K</span>
+      </div>
+      <h3>Veri Bilimci</h3>
+      <p>Ham veriden iş kararlarını etkileyen içgörüler çıkarır; istatistik ve ML uzmanlığını birleştirir.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Python/R</span>
+        <span class="skill-tag">SQL</span>
+        <span class="skill-tag">Statistik</span>
+        <span class="skill-tag">Spark</span>
+        <span class="skill-tag">Tableau</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>90%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:90%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#10b981;">
+      <div class="career-top">
+        <span class="career-icon">🔬</span>
+        <span class="salary-badge">$150K–$300K+</span>
+      </div>
+      <h3>YZ Araştırmacısı</h3>
+      <p>Yeni algoritmalar geliştirir, akademik yayınlar yapar; genellikle doktora derecesi gerektirir.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Deep Learning</span>
+        <span class="skill-tag">Matematik</span>
+        <span class="skill-tag">Akademik Yazım</span>
+        <span class="skill-tag">C++/CUDA</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>80%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#f59e0b;">
+      <div class="career-top">
+        <span class="career-icon">🏗️</span>
+        <span class="salary-badge">$120K–$200K</span>
+      </div>
+      <h3>MLOps / AI Platform Engineer</h3>
+      <p>Model deployment pipeline'larını, versiyonlama sistemlerini ve monitoring altyapısını yönetir.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Kubernetes</span>
+        <span class="skill-tag">MLflow</span>
+        <span class="skill-tag">Airflow</span>
+        <span class="skill-tag">CI/CD</span>
+        <span class="skill-tag">Cloud</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>92%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:92%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#ef4444;">
+      <div class="career-top">
+        <span class="career-icon">👁️</span>
+        <span class="salary-badge">$115K–$195K</span>
+      </div>
+      <h3>Computer Vision Engineer</h3>
+      <p>Görüntü işleme, nesne tanıma ve video analizi sistemleri geliştirir; otonom araç ve sağlık sektörü.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">OpenCV</span>
+        <span class="skill-tag">YOLO</span>
+        <span class="skill-tag">PyTorch</span>
+        <span class="skill-tag">C++</span>
+        <span class="skill-tag">CUDA</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>88%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:88%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#06b6d4;">
+      <div class="career-top">
+        <span class="career-icon">💬</span>
+        <span class="salary-badge">$120K–$200K</span>
+      </div>
+      <h3>NLP Engineer</h3>
+      <p>Dil modelleri, chatbot'lar ve metin analizi sistemleri geliştirir; LLM ince ayarı ve RAG sistemleri.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Transformers</span>
+        <span class="skill-tag">LangChain</span>
+        <span class="skill-tag">BERT/GPT</span>
+        <span class="skill-tag">RAG</span>
+        <span class="skill-tag">Vector DB</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>97%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:97%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#8b5cf6;">
+      <div class="career-top">
+        <span class="career-icon">✍️</span>
+        <span class="salary-badge">$80K–$150K</span>
+      </div>
+      <h3>Prompt Engineer</h3>
+      <p>LLM'lerden en iyi çıktıyı elde etmek için prompt stratejileri geliştirir; yeni ama hızla büyüyen alan.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">LLM API</span>
+        <span class="skill-tag">Chain-of-Thought</span>
+        <span class="skill-tag">Few-shot</span>
+        <span class="skill-tag">Evaluasyon</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>85%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:85%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#f43f5e;">
+      <div class="career-top">
+        <span class="career-icon">🛡️</span>
+        <span class="salary-badge">$120K–$210K</span>
+      </div>
+      <h3>AI Safety / Ethics Engineer</h3>
+      <p>YZ sistemlerinin güvenli, adil ve önyargısız çalışmasını sağlar; bias tespiti ve açıklanabilir YZ.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">XAI</span>
+        <span class="skill-tag">Fairness</span>
+        <span class="skill-tag">Red Teaming</span>
+        <span class="skill-tag">RLHF</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>78%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:78%"></div></div>
+      </div>
+    </div>
+
+    <div class="career-card fade-up" style="--stripe:#14b8a6;">
+      <div class="career-top">
+        <span class="career-icon">📦</span>
+        <span class="salary-badge">$100K–$175K</span>
+      </div>
+      <h3>AI Product Manager</h3>
+      <p>YZ ürünlerinin vizyonunu belirler, teknik ekip ile iş birimleri arasında köprü kurar.</p>
+      <div class="skill-tags">
+        <span class="skill-tag">Ürün Stratejisi</span>
+        <span class="skill-tag">YZ Okuryazarlığı</span>
+        <span class="skill-tag">Veri Analizi</span>
+        <span class="skill-tag">Agile</span>
+      </div>
+      <div class="demand-bar">
+        <div class="demand-label"><span>Talep Seviyesi</span><span>82%</span></div>
+        <div class="demand-track"><div class="demand-fill" style="width:82%"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap">
+  <div class="section-badge">🗺️ Yol Haritası</div>
+  <h2>YZ Kariyerine <span class="gradient-text">Başlangıç Rehberi</span></h2>
+  <p style="margin-top:.8rem;max-width:620px;">Sıfırdan 18-24 ay içinde iş bulmaya hazır hale gelebilirsiniz. İşte adım adım yol:</p>
+
+  <div class="roadmap-line">
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">1</div>
+      <div class="roadmap-phase">Ay 1–2 · Temel</div>
+      <h3>Programlama Temelleri</h3>
+      <p>Python dilini öğrenin. Veri yapıları, döngüler, fonksiyonlar ve OOP konularını pekiştirin. Matematik temellerini (lineer cebir, istatistik, kalkülüs) gözden geçirin.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">Python</span>
+        <span class="roadmap-tag">NumPy</span>
+        <span class="roadmap-tag">Pandas</span>
+        <span class="roadmap-tag">Lineer Cebir</span>
+        <span class="roadmap-tag">Olasılık</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">2</div>
+      <div class="roadmap-phase">Ay 3–5 · ML Temeli</div>
+      <h3>Makine Öğrenmesi</h3>
+      <p>Gözetimli ve gözetimsiz öğrenme algoritmalarını öğrenin. Scikit-learn ile pratik yapın. Kaggle yarışmalarına katılmaya başlayın.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">Scikit-learn</span>
+        <span class="roadmap-tag">Matplotlib</span>
+        <span class="roadmap-tag">Kaggle</span>
+        <span class="roadmap-tag">Feature Engineering</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">3</div>
+      <div class="roadmap-phase">Ay 6–9 · Derin Öğrenme</div>
+      <h3>Neural Networks & Deep Learning</h3>
+      <p>PyTorch veya TensorFlow öğrenin. CNN, RNN ve Transformer mimarilerini anlayın. Andrew Ng'nin Deep Learning Specialization kursunu tamamlayın.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">PyTorch</span>
+        <span class="roadmap-tag">CNN</span>
+        <span class="roadmap-tag">Transformer</span>
+        <span class="roadmap-tag">Hugging Face</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">4</div>
+      <div class="roadmap-phase">Ay 10–14 · Uzmanlaşma</div>
+      <h3>Uzmanlık Alanı Seçin</h3>
+      <p>NLP, Computer Vision veya RL alanlarından birini seçin. Akademik makaleler okuyun, SOTA modelleri reproduce edin. GitHub profilinizi güçlendirin.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">LLM Fine-tuning</span>
+        <span class="roadmap-tag">YOLO / SAM</span>
+        <span class="roadmap-tag">arXiv</span>
+        <span class="roadmap-tag">GitHub Portfolio</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up">
+      <div class="roadmap-dot">5</div>
+      <div class="roadmap-phase">Ay 15–18 · Production</div>
+      <h3>MLOps & Deployment</h3>
+      <p>Docker, Kubernetes ve cloud platformlarını öğrenin. MLflow veya W&B ile deney takibi yapın. FastAPI ile model servisi kurun.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">Docker</span>
+        <span class="roadmap-tag">AWS/GCP/Azure</span>
+        <span class="roadmap-tag">MLflow</span>
+        <span class="roadmap-tag">FastAPI</span>
+      </div>
+    </div>
+    <div class="roadmap-item fade-up" style="border-color:rgba(16,185,129,0.3);">
+      <div class="roadmap-dot" style="border-color:var(--accent3);color:var(--accent3);">✓</div>
+      <div class="roadmap-phase" style="color:var(--accent3)">Ay 18–24 · İş Arama</div>
+      <h3>Portföy & Kariyer</h3>
+      <p>En az 3-5 portföy projesi hazırlayın. LinkedIn profilinizi güncelleyin. Mülakatlara hazırlanın: sistem tasarımı, ML kavramları ve kodlama soruları.</p>
+      <div class="roadmap-tags">
+        <span class="roadmap-tag">LinkedIn</span>
+        <span class="roadmap-tag">LeetCode</span>
+        <span class="roadmap-tag">Sistem Tasarımı</span>
+        <span class="roadmap-tag">Portfolio</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div id="tools">
+<div class="inner">
+  <div class="section-badge">🛠️ Ekosistem</div>
+  <h2>YZ Ekosisteminin <span class="gradient-text2">Araçları</span></h2>
+  <p style="margin-top:.8rem;max-width:620px;">Yapay zeka geliştirmede kullanılan en popüler framework, platform ve araçlar:</p>
+
+  <div class="tools-grid">
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔥</span><div class="tool-name">PyTorch</div><div class="tool-cat">Framework</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🌊</span><div class="tool-name">TensorFlow</div><div class="tool-cat">Framework</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🤗</span><div class="tool-name">Hugging Face</div><div class="tool-cat">NLP/LLM</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">⛓️</span><div class="tool-name">LangChain</div><div class="tool-cat">LLM Apps</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔬</span><div class="tool-name">MLflow</div><div class="tool-cat">MLOps</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📊</span><div class="tool-name">Weights & Biases</div><div class="tool-cat">Monitoring</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🐋</span><div class="tool-name">Docker</div><div class="tool-cat">Container</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">☸️</span><div class="tool-name">Kubernetes</div><div class="tool-cat">Orchestration</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">☁️</span><div class="tool-name">AWS SageMaker</div><div class="tool-cat">Cloud ML</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🌐</span><div class="tool-name">Google Vertex AI</div><div class="tool-cat">Cloud ML</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">⚡</span><div class="tool-name">Ray</div><div class="tool-cat">Distributed</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🗃️</span><div class="tool-name">Pinecone</div><div class="tool-cat">Vector DB</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🔭</span><div class="tool-name">OpenCV</div><div class="tool-cat">Vision</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📈</span><div class="tool-name">Scikit-learn</div><div class="tool-cat">ML Library</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">🚀</span><div class="tool-name">FastAPI</div><div class="tool-cat">API</div></div>
+    <div class="tool-pill fade-up"><span class="tool-emoji">📓</span><div class="tool-name">Jupyter</div><div class="tool-cat">Notebook</div></div>
+  </div>
+</div>
+</div>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="inner">
+    <div class="section-badge">🎯 Harekete Geç</div>
+    <h2>Yapay Zeka <span class="gradient-text">Yolculuğunuzu</span> Başlatın</h2>
+    <p>Her yıl daha fazla pozisyon açılıyor, maaşlar yükseliyor ve alan genişliyor. Şimdi başlamak için doğru zaman.</p>
+    <div class="btn-group">
+      <a href="#roadmap" class="btn btn-primary">Yol Haritasını Gör ↑</a>
+      <a href="#careers" class="btn btn-secondary">Kariyer Seç</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>YZ Akademi — Yapay Zeka Eğitim Platformu &nbsp;|&nbsp; 2026</p>
+</footer>
+
+<script>
+// ── PARTICLES ──
+(function(){
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+
+  for(let i=0;i<60;i++) particles.push({
+    x: Math.random()*2000, y: Math.random()*2000,
+    vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+    r: Math.random()*2+1,
+    a: Math.random()*.6+.1
+  });
+
+  function drawParticles(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,212,255,${p.a})`;
+      ctx.fill();
+    });
+
+    // Connect nearby
+    for(let i=0;i<particles.length;i++)
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x;
+        const dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.beginPath();
+          ctx.strokeStyle=`rgba(0,212,255,${.15*(1-d/120)})`;
+          ctx.lineWidth=.5;
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.stroke();
+        }
+      }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+})();
+
+// ── HERO NEURAL CANVAS ──
+(function(){
+  const canvas = document.getElementById('neural-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const layers = [4,6,6,4,2];
+  const spacing = canvas.width / (layers.length+1);
+  let nodes = [];
+  let signals = [];
+
+  function buildNodes(){
+    nodes = [];
+    const W = canvas.width, H = canvas.height;
+    layers.forEach((count, li)=>{
+      const x = (li+1) * (W/(layers.length+1));
+      for(let ni=0;ni<count;ni++){
+        const y = H/2 + (ni - (count-1)/2) * (H/(count+1));
+        nodes.push({x, y, layer:li, active:0});
+      }
+    });
+  }
+
+  function getLayer(l){ return nodes.filter(n=>n.layer===l); }
+
+  function spawnSignal(){
+    const src = getLayer(0)[Math.floor(Math.random()*layers[0])];
+    let path = [src];
+    for(let l=1;l<layers.length;l++){
+      const next = getLayer(l);
+      path.push(next[Math.floor(Math.random()*next.length)]);
+    }
+    signals.push({path, t:0, speed:.012});
+  }
+
+  function draw(){
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    // Edges
+    for(let l=0;l<layers.length-1;l++){
+      const from = getLayer(l), to = getLayer(l+1);
+      from.forEach(f=>to.forEach(t=>{
+        ctx.beginPath();
+        ctx.strokeStyle='rgba(0,212,255,0.08)';
+        ctx.lineWidth=.8;
+        ctx.moveTo(f.x,f.y); ctx.lineTo(t.x,t.y); ctx.stroke();
+      }));
+    }
+
+    // Signals
+    signals.forEach((sig,idx)=>{
+      const {path,t} = sig;
+      const segCount = path.length-1;
+      const globalPos = t*segCount;
+      const segIdx = Math.min(Math.floor(globalPos), segCount-1);
+      const segT = globalPos - segIdx;
+      const from = path[segIdx], to = path[segIdx+1];
+      const cx = from.x + (to.x-from.x)*segT;
+      const cy = from.y + (to.y-from.y)*segT;
+
+      // glow
+      const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,18);
+      grd.addColorStop(0,'rgba(245,158,11,0.9)');
+      grd.addColorStop(1,'rgba(245,158,11,0)');
+      ctx.beginPath(); ctx.arc(cx,cy,18,0,Math.PI*2);
+      ctx.fillStyle=grd; ctx.fill();
+
+      ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
+      ctx.fillStyle='#f59e0b'; ctx.fill();
+
+      sig.t += sig.speed;
+      // activate node
+      if(segIdx < path.length) path[segIdx].active = 1;
+      if(sig.t >= 1){ signals.splice(idx,1); }
+    });
+
+    // Nodes
+    nodes.forEach(n=>{
+      const colors=['#00d4ff','#7c3aed','#7c3aed','#7c3aed','#10b981'];
+      const base = colors[n.layer] || '#00d4ff';
+      if(n.active>0){
+        const grd=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,20);
+        grd.addColorStop(0,'rgba(0,212,255,.5)');
+        grd.addColorStop(1,'transparent');
+        ctx.beginPath(); ctx.arc(n.x,n.y,20,0,Math.PI*2);
+        ctx.fillStyle=grd; ctx.fill();
+        n.active-=.05;
+      }
+      ctx.beginPath(); ctx.arc(n.x,n.y,8,0,Math.PI*2);
+      ctx.fillStyle=base; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5; ctx.stroke();
+    });
+  }
+
+  function loop(){
+    if(Math.random()<.06) spawnSignal();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function init(){
+    canvas.width = canvas.offsetWidth || 700;
+    canvas.height = canvas.offsetHeight || 300;
+    buildNodes();
+    loop();
+  }
+
+  window.addEventListener('load', init);
+  window.addEventListener('resize', ()=>{ canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight; buildNodes(); });
+})();
+
+// ── SVG NEURAL NET ──
+(function(){
+  const svg = document.getElementById('nn-svg');
+  const W=800, H=340;
+  const layers = [3,5,5,5,3];
+  const colors = ['#00d4ff','#7c3aed','#7c3aed','#7c3aed','#10b981'];
+  let svgNodes = [];
+  let animRunning = false;
+
+  function buildNN(){
+    svg.innerHTML='';
+    svgNodes=[];
+    const padX=80;
+    const colW=(W-padX*2)/(layers.length-1);
+
+    // Edges
+    for(let l=0;l<layers.length-1;l++){
+      const fromNodes=svgNodes.filter(n=>n.layer===l);
+      // we need to build nodes first; restructure:
+    }
+
+    // Build nodes array first
+    layers.forEach((count,li)=>{
+      const x=padX+li*colW;
+      for(let ni=0;ni<count;ni++){
+        const y=H/2+(ni-(count-1)/2)*(H/(count+1));
+        svgNodes.push({x,y,layer:li,el:null});
+      }
+    });
+
+    // Edges SVG
+    const edgeG=document.createElementNS('http://www.w3.org/2000/svg','g');
+    for(let l=0;l<layers.length-1;l++){
+      const from=svgNodes.filter(n=>n.layer===l);
+      const to=svgNodes.filter(n=>n.layer===l+1);
+      from.forEach(f=>to.forEach(t=>{
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',f.x); line.setAttribute('y1',f.y);
+        line.setAttribute('x2',t.x); line.setAttribute('y2',t.y);
+        line.setAttribute('stroke','rgba(255,255,255,0.07)');
+        line.setAttribute('stroke-width','1');
+        edgeG.appendChild(line);
+      }));
+    }
+    svg.appendChild(edgeG);
+
+    // Nodes SVG
+    svgNodes.forEach(n=>{
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+
+      const glow=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      glow.setAttribute('cx',n.x); glow.setAttribute('cy',n.y); glow.setAttribute('r','18');
+      glow.setAttribute('fill',colors[n.layer]); glow.setAttribute('opacity','0');
+      glow.setAttribute('class','node-glow');
+
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',n.x); c.setAttribute('cy',n.y); c.setAttribute('r','9');
+      c.setAttribute('fill',colors[n.layer]);
+      c.setAttribute('stroke','rgba(255,255,255,0.25)'); c.setAttribute('stroke-width','1.5');
+
+      g.appendChild(glow); g.appendChild(c);
+      svg.appendChild(g);
+      n.el={glow,c};
+    });
+
+    // Labels
+    const labels=['Giriş','Gizli 1','Gizli 2','Gizli 3','Çıkış'];
+    layers.forEach((_,li)=>{
+      const x=padX+li*(colW);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',x); t.setAttribute('y',H-10);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill','rgba(148,163,184,0.7)');
+      t.setAttribute('font-size','11');
+      t.setAttribute('font-family','Segoe UI,sans-serif');
+      t.textContent=labels[li];
+      svg.appendChild(t);
+    });
+  }
+
+  function pulse(){
+    // Pick random signal path
+    const src=svgNodes.filter(n=>n.layer===0)[Math.floor(Math.random()*layers[0])];
+    let path=[src];
+    for(let l=1;l<layers.length;l++){
+      const next=svgNodes.filter(n=>n.layer===l);
+      path.push(next[Math.floor(Math.random()*next.length)]);
+    }
+    path.forEach((n,i)=>{
+      setTimeout(()=>{
+        n.el.glow.setAttribute('opacity','0.35');
+        n.el.c.setAttribute('fill','#f59e0b');
+        setTimeout(()=>{
+          n.el.glow.setAttribute('opacity','0');
+          n.el.c.setAttribute('fill',colors[n.layer]);
+        },350);
+      },i*180);
+    });
+  }
+
+  buildNN();
+  setInterval(pulse, 800);
+
+  // Training fill
+  let epoch=0;
+  const fill=document.getElementById('training-fill');
+  const epochLabel=document.getElementById('epoch-label');
+  setInterval(()=>{
+    epoch=(epoch+1)%101;
+    fill.style.width=epoch+'%';
+    epochLabel.textContent=`Epoch: ${epoch}/100`;
+  },120);
+})();
+
+// ── SCROLL PROGRESS ──
+window.addEventListener('scroll',()=>{
+  const el=document.getElementById('progress-bar');
+  const pct=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  el.style.width=pct+'%';
+});
+
+// ── INTERSECTION OBSERVER (fade-up) ──
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// ── COUNTER ANIMATION ──
+function animateCounter(el){
+  const target=+el.dataset.target;
+  let current=0;
+  const step=Math.max(1,Math.floor(target/60));
+  const timer=setInterval(()=>{
+    current=Math.min(current+step,target);
+    el.textContent=current.toLocaleString('tr-TR');
+    if(current>=target) clearInterval(timer);
+  },30);
+}
+const counterObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.counter').forEach(c=>animateCounter(c));
+      counterObs.unobserve(e.target);
+    }
+  });
+},{threshold:.5});
+document.getElementById('stats') && counterObs.observe(document.getElementById('stats'));
+</script>
+</body>
+</html>
