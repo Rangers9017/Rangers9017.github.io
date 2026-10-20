@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" role="img" aria-label="Drone Lab İHA tasarım ve uçuş kontrolü rehberi önizlemesi">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111522"/><stop offset="1" stop-color="#1c1722"/></linearGradient><linearGradient id="glow"><stop stop-color="#ffad55" stop-opacity=".22"/><stop offset="1" stop-color="#65d7ff" stop-opacity="0"/></linearGradient></defs>
+<rect width="760" height="440" fill="url(#bg)"/><circle cx="665" cy="40" r="220" fill="url(#glow)"/>
+<rect x="48" y="34" width="664" height="372" rx="20" fill="#101522" stroke="#373449"/>
+<rect x="48" y="34" width="664" height="42" rx="20" fill="#191d2b"/>
+<circle cx="71" cy="55" r="5" fill="#ff6f61"/><circle cx="88" cy="55" r="5" fill="#ffbd4a"/><circle cx="105" cy="55" r="5" fill="#5ce0cf"/>
+<rect x="140" y="48" width="310" height="14" rx="7" fill="#303449"/>
+<text x="80" y="111" fill="#ffbd4a" font-family="system-ui,sans-serif" font-size="11" font-weight="700" letter-spacing="2">DRONE LAB · İHA TASARIMI</text>
+<text x="80" y="151" fill="#f1f2f7" font-family="system-ui,sans-serif" font-size="24" font-weight="750">Bir İHA’yı uçurmadan önce,</text>
+<text x="80" y="181" fill="#f1f2f7" font-family="system-ui,sans-serif" font-size="24" font-weight="750">anlamayı öğren.</text>
+<text x="80" y="210" fill="#a7afc2" font-family="system-ui,sans-serif" font-size="12">Motor · pervane · batarya · itki · uçuş kontrolü</text>
+<rect x="80" y="235" width="360" height="125" rx="12" fill="#161c2a" stroke="#35394c"/>
+<text x="100" y="260" fill="#65d7ff" font-family="system-ui,sans-serif" font-size="11" font-weight="700">UÇUŞ SİSTEMİNE BÜTÜNSEL BAKIŞ</text>
+<path d="M105 284h38m12 0h38m12 0h38m12 0h38m12 0h38" stroke="#3b475b" stroke-width="2"/>
+<circle cx="109" cy="284" r="5" fill="#ffbd4a"/><circle cx="165" cy="284" r="5" fill="#65d7ff"/><circle cx="221" cy="284" r="5" fill="#5ce0cf"/><circle cx="277" cy="284" r="5" fill="#bd91ff"/><circle cx="333" cy="284" r="5" fill="#ff8b76"/>
+<text x="100" y="313" fill="#c6ccda" font-family="system-ui,sans-serif" font-size="10">Bileşen seçimi · güç · kontrol · log</text>
+<text x="100" y="337" fill="#8f9bb0" font-family="system-ui,sans-serif" font-size="10">ArduPilot / PX4 · hesaplama · emniyet</text>
+<rect x="480" y="220" width="194" height="155" rx="14" fill="#171d2b" stroke="#3a3e52"/>
+<path d="M545 276h62M553 268l-21-20M599 268l21-20M553 284l-21 20M599 284l21 20" fill="none" stroke="#ffbd4a" stroke-width="5" stroke-linecap="round"/>
+<rect x="551" y="264" width="52" height="25" rx="8" fill="#202b39" stroke="#65d7ff" stroke-width="2"/>
+<circle cx="529" cy="244" r="17" fill="none" stroke="#65d7ff" stroke-width="2"/><circle cx="623" cy="244" r="17" fill="none" stroke="#65d7ff" stroke-width="2"/>
+<circle cx="529" cy="308" r="17" fill="none" stroke="#65d7ff" stroke-width="2"/><circle cx="623" cy="308" r="17" fill="none" stroke="#65d7ff" stroke-width="2"/>
+<circle cx="577" cy="276" r="5" fill="#ffbd4a"/>
+<text x="577" y="351" text-anchor="middle" fill="#a7afc2" font-family="system-ui,sans-serif" font-size="10">İHA TASARIM REHBERİ</text>
+</svg>
