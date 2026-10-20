@@ -52,5 +52,14 @@
     "description": "Gelirini, giderlerini ve borç ödeme planını tarayıcında hesapla.",
     "action": "Aracı aç",
     "alt": "Bütçe özeti ve gider grafiği önizlemesi"
+  },
+  {
+    "slug": "mcu_embedded_guide.html",
+    "preview": "mcu-lab.svg",
+    "category": "Gömülü sistemler",
+    "title": "MCU Lab — STM32 Rehberi",
+    "description": "STM32, gömülü C/C++, çevre birimleri, PCB tasarımı ve test için etkileşimli mühendislik rehberi.",
+    "action": "Rehberi aç",
+    "alt": "MCU Lab STM32 ve gömülü sistemler rehberi önizlemesi"
   }
 ]
