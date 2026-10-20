@@ -195,7 +195,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 /* Main loop: bayrağı kontrollü ele al.
    Veri/flag birden fazla bağlamda güncelleniyorsa
-   kritik bölüm, ring buffer veya atomik strateji tasarla. */</pre></div><div class="callout warn">`volatile` yazmak bir concurrency tasarımının yerine geçmez. Çok baytlı veri, struct, ring buffer index'i veya ISR/main ortak state için yarış durumunu ayrıca çöz.</div></article>
+   kritik bölüm, ring buffer veya atomik strateji tasarla. */</pre></div><div class="callout info">Bu kod yalnızca callback ve bayrak örneğidir; tek başına çalışan bir alım döngüsü değildir. STM32 HAL kullanırken alımı başlangıçta `HAL_UART_Receive_IT()` veya DMA ile başlatmalı, her tamamlanmadan sonra yeniden kurmalı ve sürekli veriyi kaybetmemek için uygun bir tampon/ring buffer kullanmalısın.</div><div class="callout warn">`volatile` yazmak bir concurrency tasarımının yerine geçmez. Çok baytlı veri, struct, ring buffer index'i veya ISR/main ortak state için yarış durumunu ayrıca çöz.</div></article>
  </div>
  <div class="grid g2" style="margin-top:15px">
   <article class="card"><div class="card-title">Bellek haritası: nerede ne bulunur?</div><div class="table-wrap"><table><thead><tr><th>Bölge</th><th>Tipik içerik</th><th>Dikkat</th></tr></thead><tbody>
