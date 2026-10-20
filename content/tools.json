@@ -61,5 +61,14 @@
     "description": "STM32, gömülü C/C++, çevre birimleri, PCB tasarımı ve test için etkileşimli mühendislik rehberi.",
     "action": "Rehberi aç",
     "alt": "MCU Lab STM32 ve gömülü sistemler rehberi önizlemesi"
+  },
+  {
+    "slug": "drone_lab.html",
+    "preview": "drone-lab.svg",
+    "category": "İHA ve uçuş kontrolü",
+    "title": "Drone Lab — İHA Tasarım Rehberi",
+    "description": "Motor-pervane, batarya, itki, ArduPilot/PX4, uçuş dinamiği ve log analizi için etkileşimli rehber.",
+    "action": "Rehberi aç",
+    "alt": "Drone Lab İHA tasarım ve uçuş kontrolü rehberi önizlemesi"
   }
 ]
